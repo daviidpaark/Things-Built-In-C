@@ -4,9 +4,9 @@
 #include "global.h"
 #include "debug.h"
 
-int parseInt(char *value)
+long long parseInt(char *value)
 {
-    int number = 0;
+    long long number = 0;
     for (int i = 0; *value != '\0'; ++i)
     {
         if ((*value >= '0') && (*value <= '9'))
@@ -67,6 +67,7 @@ int validargs(int argc, char **argv)
             global_options = 0x20000004;
             return 0;
         }
+
         q = *(argv + 2);
         if ((*q != '-') || (*(q + 1) != 'p') || (*(q + 2) != '\0'))
             return -1;
@@ -75,8 +76,11 @@ int validargs(int argc, char **argv)
             global_options = 0x30000004;
             return 0;
         }
+
         q = *(argv + 3);
-        int indent = parseInt(q);
+        if (*q == '-')
+            return -1;
+        long long indent = parseInt(q);
         if (indent < 0)
             return -1;
         global_options = 0x30000000 + indent;
