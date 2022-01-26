@@ -23,8 +23,30 @@ int main(int argc, char **argv)
         USAGE(*argv, EXIT_FAILURE);
     if (global_options == HELP_OPTION)
         USAGE(*argv, EXIT_SUCCESS);
-    // TO BE IMPLEMENTED
-    return EXIT_FAILURE;
+
+    FILE *input;
+    input = stdin;
+    if (global_options == VALIDATE_OPTION)
+    {
+        argo_read_value(input);
+        return EXIT_SUCCESS;
+    }
+    else if (global_options == CANONICALIZE_OPTION)
+    {
+        argo_write_value(argo_read_value(input), stdout);
+        return EXIT_SUCCESS;
+    }
+    else if (global_options >= (CANONICALIZE_OPTION | PRETTY_PRINT_OPTION))
+    {
+        if (global_options > (CANONICALIZE_OPTION | PRETTY_PRINT_OPTION))
+        {
+            argo_write_value(argo_read_value(input), stdout);
+            return EXIT_SUCCESS;
+        }
+        argo_write_value(argo_read_value(input), stdout);
+        return EXIT_SUCCESS;
+    }
+    return EXIT_SUCCESS;
 }
 
 /*

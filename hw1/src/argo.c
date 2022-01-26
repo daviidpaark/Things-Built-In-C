@@ -26,10 +26,18 @@
  * @return  Zero if the operation is completely successful,
  * nonzero if there is any error.
  */
-ARGO_VALUE *argo_read_value(FILE *f) {
-    // TO BE IMPLEMENTED.
-    abort();
-}
+// ARGO_VALUE *argo_read_value(FILE *f)
+// {
+//     ARGO_VALUE JSON;
+//     char p = fgetc(f);
+
+//     while (p != EOF)
+//     {
+
+//         p = fgetc(f);
+//     }
+//     return NULL;
+// }
 
 /**
  * @brief  Read JSON input from a specified input stream, attempt to
@@ -49,7 +57,8 @@ ARGO_VALUE *argo_read_value(FILE *f) {
  * @return  Zero if the operation is completely successful,
  * nonzero if there is any error.
  */
-int argo_read_string(ARGO_STRING *s, FILE *f) {
+int argo_read_string(ARGO_STRING *s, FILE *f)
+{
     // TO BE IMPLEMENTED.
     abort();
 }
@@ -76,7 +85,8 @@ int argo_read_string(ARGO_STRING *s, FILE *f) {
  * @return  Zero if the operation is completely successful,
  * nonzero if there is any error.
  */
-int argo_read_number(ARGO_NUMBER *n, FILE *f) {
+int argo_read_number(ARGO_NUMBER *n, FILE *f)
+{
     // TO BE IMPLEMENTED.
     abort();
 }
@@ -94,10 +104,11 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f) {
  * @return  Zero if the operation is completely successful,
  * nonzero if there is any error.
  */
-int argo_write_value(ARGO_VALUE *v, FILE *f) {
-    // TO BE IMPLEMENTED.
-    abort();
-}
+// int argo_write_value(ARGO_VALUE *v, FILE *f)
+// {
+
+//     return 0;
+// }
 
 /**
  * @brief  Write canonical JSON representing a specified string
@@ -119,7 +130,8 @@ int argo_write_value(ARGO_VALUE *v, FILE *f) {
  * @return  Zero if the operation is completely successful,
  * nonzero if there is any error.
  */
-int argo_write_string(ARGO_STRING *s, FILE *f) {
+int argo_write_string(ARGO_STRING *s, FILE *f)
+{
     // TO BE IMPLEMENTED.
     abort();
 }
@@ -142,7 +154,8 @@ int argo_write_string(ARGO_STRING *s, FILE *f) {
  * @return  Zero if the operation is completely successful,
  * nonzero if there is any error.
  */
-int argo_write_number(ARGO_NUMBER *n, FILE *f) {
+int argo_write_number(ARGO_NUMBER *n, FILE *f)
+{
     // TO BE IMPLEMENTED.
     abort();
 }
