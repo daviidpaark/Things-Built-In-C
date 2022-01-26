@@ -4,6 +4,22 @@
 #include "global.h"
 #include "debug.h"
 
+int parseInt(char *value)
+{
+    int number = 0;
+    for (int i = 0; *value != '\0'; ++i)
+    {
+        if ((*value >= '0') && (*value <= '9'))
+        {
+            number = (number * 10) + (*value - '0');
+            value++;
+        }
+        else
+            return -1;
+    }
+    return number;
+}
+
 /**
  * @brief Validates command line arguments passed to the program.
  * @details This function will validate all the arguments passed to the
@@ -39,27 +55,31 @@ int validargs(int argc, char **argv)
         global_options = 0x80000000;
         return 0;
     case 'v':
-        if (*(argv + 2) != NULL)
+        if ((*(p + 1) != '\0') || *(argv + 2) != NULL)
             return -1;
         global_options = 0x40000000;
         return 0;
     case 'c':
-        if (*(argv + 2) != NULL)
+        if (*(p + 1) != '\0')
+            return -1;
+        if (*(argv + 2) == NULL)
         {
-            q = *(argv + 2);
-            if ((*q != '-') || (*(q + 1) != 'p'))
-                return -1;
-            q++;
-            if (*(argv + 3) == NULL)
-            {
-                global_options = 0x30000000;
-                return 0;
-            }
-            q = *(argv + 3);
-            global_options = 0x30000000; // TO-DO Parse string to int and add to global_options
+            global_options = 0x20000004;
             return 0;
         }
-        global_options = 0x20000000;
+        q = *(argv + 2);
+        if ((*q != '-') || (*(q + 1) != 'p') || (*(q + 2) != '\0'))
+            return -1;
+        if (*(argv + 3) == NULL)
+        {
+            global_options = 0x30000004;
+            return 0;
+        }
+        q = *(argv + 3);
+        int indent = parseInt(q);
+        if (indent < 0)
+            return -1;
+        global_options = 0x30000000 + indent;
         return 0;
     default:
         return -1;
