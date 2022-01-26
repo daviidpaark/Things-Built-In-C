@@ -20,7 +20,48 @@
  * of the selected program options.
  */
 
-int validargs(int argc, char **argv) {
-    // TO BE IMPLEMENTED
-    abort();
+int validargs(int argc, char **argv)
+{
+    if ((argc == 1) | (argc > 4))
+        return -1;
+
+    char *p, *q;
+    p = *(argv + 1);
+    if (*p != '-')
+        return -1;
+    p++;
+
+    switch (*p)
+    {
+    case 'h':
+        if (*(p + 1) != '\0')
+            return -1;
+        global_options = 0x80000000;
+        return 0;
+    case 'v':
+        if (*(argv + 2) != NULL)
+            return -1;
+        global_options = 0x40000000;
+        return 0;
+    case 'c':
+        if (*(argv + 2) != NULL)
+        {
+            q = *(argv + 2);
+            if ((*q != '-') || (*(q + 1) != 'p'))
+                return -1;
+            q++;
+            if (*(argv + 3) == NULL)
+            {
+                global_options = 0x30000000;
+                return 0;
+            }
+            q = *(argv + 3);
+            global_options = 0x30000000; // TO-DO Parse string to int and add to global_options
+            return 0;
+        }
+        global_options = 0x20000000;
+        return 0;
+    default:
+        return -1;
+    }
 }
