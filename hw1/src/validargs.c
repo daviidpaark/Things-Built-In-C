@@ -80,10 +80,10 @@ int validargs(int argc, char **argv)
         q = *(argv + 3);
         if (*q == '-')
             return -1;
-        int indent = parseInt(q);
-        if (indent < 0 || indent > 127)
+        indent_level = parseInt(q);
+        if (indent_level < 0 || indent_level > 127)
             return -1;
-        global_options = 0x30000000 + indent;
+        global_options = 0x30000000 + indent_level;
         return 0;
     default:
         return -1;

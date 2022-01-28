@@ -5,6 +5,12 @@
 #include "global.h"
 #include "debug.h"
 
+void link(ARGO_VALUE *array, int index)
+{
+    (array + index)->prev = (array + (index - 1));
+    (array + (index - 1))->next = (array + index);
+}
+
 /**
  * @brief  Read JSON input from a specified input stream, parse it,
  * and return a data structure representing the corresponding value.
@@ -26,18 +32,23 @@
  * @return  Zero if the operation is completely successful,
  * nonzero if there is any error.
  */
-// ARGO_VALUE *argo_read_value(FILE *f)
-// {
-//     ARGO_VALUE JSON;
-//     char p = fgetc(f);
+ARGO_VALUE *argo_read_value(FILE *f)
+{
+    (argo_value_storage + argo_next_value)->type = ARGO_NO_TYPE;
+    argo_next_value++;
+    link(argo_value_storage, argo_next_value);
 
-//     while (p != EOF)
-//     {
-
-//         p = fgetc(f);
-//     }
-//     return NULL;
-// }
+    char c;
+    while ((c = fgetc(f)) != EOF)
+    {
+        if (c == ARGO_LBRACE)
+        {
+            (argo_value_storage + argo_next_value)->type = ARGO_OBJECT_TYPE;
+            argo_append_char(&((argo_value_storage + argo_next_value)->content.string), c);
+        }
+    }
+    return argo_value_storage;
+}
 
 /**
  * @brief  Read JSON input from a specified input stream, attempt to
