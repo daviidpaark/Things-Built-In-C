@@ -284,9 +284,7 @@ int argo_write_array(ARGO_ARRAY *a, FILE *f)
         }
         if (head->type == ARGO_STRING_TYPE)
         {
-            fprintf(f, "%c", ARGO_QUOTE);
             argo_write_string(&head->content.string, f);
-            fprintf(f, "%c", ARGO_QUOTE);
         }
         if (head->type == ARGO_NUMBER_TYPE)
         {
@@ -317,9 +315,7 @@ int argo_write_object(ARGO_OBJECT *o, FILE *f)
     {
         if (head->type == ARGO_OBJECT_TYPE)
         {
-            fprintf(f, "%c", ARGO_QUOTE);
             argo_write_string(&head->name, f);
-            fprintf(f, "%c", ARGO_QUOTE);
             fprintf(f, "%c ", ARGO_COLON);
 
             fprintf(f, "%c", ARGO_LBRACE);
@@ -332,9 +328,7 @@ int argo_write_object(ARGO_OBJECT *o, FILE *f)
         }
         if (head->type == ARGO_ARRAY_TYPE)
         {
-            fprintf(f, "%c", ARGO_QUOTE);
             argo_write_string(&head->name, f);
-            fprintf(f, "%c", ARGO_QUOTE);
             fprintf(f, "%c ", ARGO_COLON);
 
             fprintf(f, "%c", ARGO_LBRACK);
@@ -347,29 +341,23 @@ int argo_write_object(ARGO_OBJECT *o, FILE *f)
         }
         if (head->type == ARGO_STRING_TYPE)
         {
-            fprintf(f, "%c", ARGO_QUOTE);
             argo_write_string(&head->name, f);
-            fprintf(f, "%c", ARGO_QUOTE);
             fprintf(f, "%c ", ARGO_COLON);
 
-            fprintf(f, "%c", ARGO_QUOTE);
             argo_write_string(&head->content.string, f);
-            fprintf(f, "%c", ARGO_QUOTE);
         }
         if (head->type == ARGO_NUMBER_TYPE)
         {
-            fprintf(f, "%c", ARGO_QUOTE);
             argo_write_string(&head->name, f);
-            fprintf(f, "%c", ARGO_QUOTE);
             fprintf(f, "%c ", ARGO_COLON);
+
             argo_write_number(&head->content.number, f);
         }
         if (head->type == ARGO_BASIC_TYPE)
         {
-            fprintf(f, "%c", ARGO_QUOTE);
             argo_write_string(&head->name, f);
-            fprintf(f, "%c", ARGO_QUOTE);
             fprintf(f, "%c ", ARGO_COLON);
+
             argo_write_basic(&head->content.basic, f);
         }
         if (head->next->type != ARGO_NO_TYPE)
@@ -458,10 +446,23 @@ int argo_write_value(ARGO_VALUE *v, FILE *f)
  */
 int argo_write_string(ARGO_STRING *s, FILE *f)
 {
+    fprintf(f, "%c", ARGO_QUOTE);
     for (int i = 0; i < s->length; i++)
     {
-        fprintf(f, "%c", *(s->content + i));
+        if (*(s->content + i) == 92)
+        {
+            fprintf(f, "\\\\");
+        }
+        else if (*(s->content + i) == 34)
+        {
+            fprintf(f, "\\\"");
+        }
+        else
+        {
+            fprintf(f, "%c", *(s->content + i));
+        }
     }
+    fprintf(f, "%c", ARGO_QUOTE);
     return 0;
 }
 
