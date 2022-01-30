@@ -73,6 +73,7 @@ int validargs(int argc, char **argv)
             return -1;
         if (*(argv + 3) == NULL)
         {
+            indent_level = 4;
             global_options = 0x30000004;
             return 0;
         }

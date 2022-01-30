@@ -26,20 +26,20 @@ int main(int argc, char **argv)
 
     if (global_options == VALIDATE_OPTION)
     {
-        argo_read_value(stdin);
-        return EXIT_SUCCESS;
+        if ((argo_read_value(stdin) != NULL))
+            return EXIT_SUCCESS;
     }
     else if (global_options == CANONICALIZE_OPTION)
     {
-        argo_write_value(argo_read_value(stdin), stdout);
-        return EXIT_SUCCESS;
+        if ((argo_write_value(argo_read_value(stdin), stdout)))
+            return EXIT_SUCCESS;
     }
     else if (global_options >= (CANONICALIZE_OPTION | PRETTY_PRINT_OPTION))
     {
-        argo_write_value(argo_read_value(stdin), stdout);
-        return EXIT_SUCCESS;
+        if ((argo_write_value(argo_read_value(stdin), stdout)))
+            return EXIT_SUCCESS;
     }
-    return EXIT_SUCCESS;
+    return EXIT_FAILURE;
 }
 
 /*
