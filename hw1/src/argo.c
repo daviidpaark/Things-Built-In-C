@@ -522,6 +522,8 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                 fprintf(f, "%fe-%d", value, exponent);
                 return 0;
             }
+            fprintf(f, "1.0");
+            return 0;
         }
         if (value < 0)
         {
@@ -550,6 +552,8 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                 fprintf(f, "%fe-%d", value, exponent);
                 return 0;
             }
+            fprintf(f, "-1.0");
+            return 0;
         }
         else
         {
@@ -563,17 +567,13 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                 fprintf(f, "1.0");
                 return 0;
             }
-            if (value == -1.0)
-            {
-                fprintf(f, "-1.0");
-                return 0;
-            }
+            return 0;
         }
     }
-    if (n->valid_string)
-    {
-        argo_write_string(&n->string_value, f);
-        return 0;
-    }
+    // if (n->valid_string)
+    // {
+    //     argo_write_string(&n->string_value, f);
+    //     return 0;
+    // }
     return -1;
 }
