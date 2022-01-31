@@ -509,7 +509,7 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
             }
             else if (value < 1)
             {
-                while (value <= 1)
+                while (value <= 0.1)
                 {
                     exponent++;
                     value = value * 10;
@@ -537,7 +537,7 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
             }
             else if (value > -1)
             {
-                while (value >= -1)
+                while (value >= -0.1)
                 {
                     exponent++;
                     value = value * 10;
