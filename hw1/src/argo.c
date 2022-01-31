@@ -493,8 +493,82 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
     }
     if (n->valid_float)
     {
-        fprintf(f, "%1.e", n->float_value);
-        return 0;
+        double value = n->float_value;
+        int exponent = 0;
+        if (value > 0)
+        {
+            if (value > 1)
+            {
+                while (value >= 1)
+                {
+                    exponent++;
+                    value = value / 10;
+                }
+                fprintf(f, "%fe%d", value, exponent);
+                return 0;
+            }
+            else if (value < 1)
+            {
+                while (value <= 1)
+                {
+                    exponent++;
+                    value = value * 10;
+                }
+                if (exponent == 1)
+                {
+                    fprintf(f, "%f", n->float_value);
+                    return 0;
+                }
+                fprintf(f, "%fe-%d", value, exponent);
+                return 0;
+            }
+        }
+        if (value < 0)
+        {
+            if (value < -1)
+            {
+                while (value <= -1)
+                {
+                    exponent++;
+                    value = value / 10;
+                }
+                fprintf(f, "%fe%d", value, exponent);
+                return 0;
+            }
+            else if (value > -1)
+            {
+                while (value >= -1)
+                {
+                    exponent++;
+                    value = value * 10;
+                }
+                if (exponent == 1)
+                {
+                    fprintf(f, "%f", n->float_value);
+                    return 0;
+                }
+                fprintf(f, "%fe-%d", value, exponent);
+                return 0;
+            }
+        }
+        else
+        {
+            if (value == 0.0)
+            {
+                fprintf(f, "0.0");
+                return 0;
+            }
+            if (value == 1.0)
+            {
+                fprintf(f, "1.0");
+                return 0;
+            }
+            if (value == -1.0)
+            {
+                fprintf(f, "-1.0");
+                return 0;
+            }
+        }
     }
     if (n->valid_string)
     {
