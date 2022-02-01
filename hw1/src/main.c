@@ -26,18 +26,26 @@ int main(int argc, char **argv)
 
     if (global_options == VALIDATE_OPTION)
     {
-        if ((argo_read_value(stdin) != NULL))
+        if (argo_read_value(stdin) != NULL)
             return EXIT_SUCCESS;
     }
     else if (global_options == CANONICALIZE_OPTION)
     {
-        if ((argo_write_value(argo_read_value(stdin), stdout)))
-            return EXIT_SUCCESS;
+        ARGO_VALUE *head = argo_read_value(stdin);
+        if (head != NULL)
+        {
+            if (argo_write_value(head, stdout))
+                return EXIT_SUCCESS;
+        }
     }
     else if (global_options >= (CANONICALIZE_OPTION | PRETTY_PRINT_OPTION))
     {
-        if ((argo_write_value(argo_read_value(stdin), stdout)))
-            return EXIT_SUCCESS;
+        ARGO_VALUE *head = argo_read_value(stdin);
+        if (head != NULL)
+        {
+            if (argo_write_value(head, stdout))
+                return EXIT_SUCCESS;
+        }
     }
     return EXIT_FAILURE;
 }
