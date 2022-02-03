@@ -318,7 +318,8 @@ int argo_read_object(ARGO_OBJECT *o, FILE *f)
 ARGO_VALUE *argo_read_value(FILE *f)
 {
     char c;
-    while ((c = fgetc(f)) != EOF)
+    c = fgetc(f);
+    while (c != EOF)
     {
         charCounter(c);
         if (c == ARGO_LBRACE)
@@ -369,7 +370,15 @@ ARGO_VALUE *argo_read_value(FILE *f)
                 fprintf(stderr, "Invalid basic format at [%d,%d]\n", argo_lines_read, argo_chars_read);
                 return NULL;
             }
+            c = fgetc(f);
+            charCounter(c);
+            if (!argo_is_whitespace(c))
+            {
+                fprintf(stderr, "Invalid basic format at [%d,%d]\n", argo_lines_read, argo_chars_read);
+                return NULL;
+            }
         }
+        c = fgetc(f);
     }
     return argo_value_storage;
 }
@@ -395,7 +404,8 @@ ARGO_VALUE *argo_read_value(FILE *f)
 int argo_read_string(ARGO_STRING *s, FILE *f)
 {
     char c;
-    while ((c = fgetc(f)) != EOF)
+    c = fgetc(f);
+    while (c != EOF)
     {
         charCounter(c);
         if (c == ARGO_QUOTE)
@@ -403,6 +413,7 @@ int argo_read_string(ARGO_STRING *s, FILE *f)
             return 0;
         }
         argo_append_char(s, c);
+        c = fgetc(f);
     }
     return -1;
 }
@@ -432,40 +443,30 @@ int argo_read_string(ARGO_STRING *s, FILE *f)
 int argo_read_number(ARGO_NUMBER *n, FILE *f)
 {
     n->valid_string = 1;
+    n->valid_int = 1;
     int sign = 1;
     int expSign = 1;
     int exponent = 0;
+    long int v = 0;
     double d = 0.0;
     char c;
-    while ((c = fgetc(f)) != EOF)
+    c = fgetc(f);
+    while (c != EOF)
     {
+        charCounter(c);
         if (c == ARGO_MINUS)
         {
             argo_append_char(&n->string_value, c);
             sign = -1;
             c = fgetc(f);
-        }
-        if (argo_is_exponent(c))
-        {
-            c = fgetc(f);
-            if (c == ARGO_MINUS)
-            {
-                argo_append_char(&n->string_value, c);
-                expSign = -1;
-                c = fgetc(f);
-            }
-            while (argo_is_digit(c))
-            {
-                argo_append_char(&n->string_value, c);
-                exponent = (exponent * 10) + (c - '0');
-                c = fgetc(f);
-            }
-            break;
+            charCounter(c);
         }
         if (c == ARGO_PERIOD)
         {
+            d = (double)v;
             int i = 1;
             c = fgetc(f);
+            charCounter(c);
             while (argo_is_digit(c))
             {
                 argo_append_char(&n->string_value, c);
@@ -479,41 +480,66 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
                 d = d + ((double)(c - '0')) / div;
                 i++;
                 c = fgetc(f);
+                charCounter(c);
             }
-            while ((c = fgetc(f)) != EOF)
+            while (c != EOF)
             {
                 if (argo_is_exponent(c))
                 {
                     c = fgetc(f);
+                    charCounter(c);
                     if (c == ARGO_MINUS)
                     {
                         argo_append_char(&n->string_value, c);
                         expSign = -1;
                         c = fgetc(f);
+                        charCounter(c);
                     }
                     while (argo_is_digit(c))
                     {
                         argo_append_char(&n->string_value, c);
                         exponent = (exponent * 10) + (c - '0');
                         c = fgetc(f);
+                        charCounter(c);
                     }
                     break;
                 }
+                c = fgetc(f);
             }
-            break;
+            n->valid_float = 1;
+            n->valid_int = 0;
+        }
+        if (argo_is_exponent(c))
+        {
+            c = fgetc(f);
+            charCounter(c);
+            if (c == ARGO_MINUS)
+            {
+                argo_append_char(&n->string_value, c);
+                expSign = -1;
+                c = fgetc(f);
+                charCounter(c);
+            }
+            while (argo_is_digit(c))
+            {
+                argo_append_char(&n->string_value, c);
+                exponent = (exponent * 10) + (c - '0');
+                c = fgetc(f);
+                charCounter(c);
+            }
         }
         if (!argo_is_digit(c))
         {
             ungetc(c, f);
             break;
         }
-        charCounter(c);
         argo_append_char(&n->string_value, c);
-        d = (d * 10) + (c - '0');
+        v = (v * 10) + (c - '0');
+        c = fgetc(f);
     }
     if (exponent > 0)
     {
-        while (exponent >= 0)
+        while (exponent > 0)
         {
             if (expSign == 1)
             {
@@ -528,7 +554,7 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
         }
     }
     n->float_value = d * sign;
-    n->valid_float = 1;
+    n->int_value = v * sign;
     return 0;
 }
 

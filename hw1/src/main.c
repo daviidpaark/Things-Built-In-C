@@ -28,6 +28,7 @@ int main(int argc, char **argv)
     {
         if (argo_read_value(stdin) != NULL)
             return EXIT_SUCCESS;
+        return EXIT_FAILURE;
     }
     else if (global_options == CANONICALIZE_OPTION)
     {
@@ -37,6 +38,7 @@ int main(int argc, char **argv)
             if (argo_write_value(head, stdout))
                 return EXIT_SUCCESS;
         }
+        return EXIT_FAILURE;
     }
     else if (global_options >= (CANONICALIZE_OPTION | PRETTY_PRINT_OPTION))
     {
@@ -46,6 +48,7 @@ int main(int argc, char **argv)
             if (argo_write_value(head, stdout))
                 return EXIT_SUCCESS;
         }
+        return EXIT_FAILURE;
     }
     return EXIT_FAILURE;
 }
