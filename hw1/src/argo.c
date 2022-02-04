@@ -87,17 +87,25 @@ int argo_read_array(ARGO_ARRAY *a, FILE *f)
 {
     argo_next_value++;
     ARGO_VALUE *sent = a->element_list;
-    *(argo_value_storage + argo_next_value) = *sent;
     a->element_list->type = ARGO_NO_TYPE;
-    argo_next_value++;
-    link((argo_value_storage + argo_next_value), (argo_value_storage + (argo_next_value - 1)));
     char c;
-    while ((c = fgetc(f)) != EOF)
+    c = fgetc(f);
+    charCounter(c);
+    if (c == ARGO_RBRACK)
+    {
+        link(sent, sent);
+        return 0;
+    }
+    argo_next_value++;
+    link((argo_value_storage + argo_next_value), sent);
+    ARGO_VALUE *last = (argo_value_storage + argo_next_value);
+    while (c != EOF)
     {
         charCounter(c);
+        last = (argo_value_storage + argo_next_value);
         if (c == ARGO_RBRACK)
         {
-            link(sent, (argo_value_storage + argo_next_value));
+            link(sent, last);
             return 0;
         }
         if (c == ARGO_LBRACK)
@@ -109,6 +117,15 @@ int argo_read_array(ARGO_ARRAY *a, FILE *f)
                 fprintf(stderr, "Invalid array format at [%d,%d]\n", argo_lines_read, charPos);
                 return -1;
             }
+            if (((c = fgetc(f)) == ARGO_RBRACK))
+            {
+                link(sent, last);
+                return 0;
+            }
+            else
+                ungetc(c, f);
+            argo_next_value++;
+            link((argo_value_storage + argo_next_value), last);
         }
         if (c == ARGO_LBRACE)
         {
@@ -119,6 +136,15 @@ int argo_read_array(ARGO_ARRAY *a, FILE *f)
                 fprintf(stderr, "Invalid object format at [%d,%d]\n", argo_lines_read, charPos);
                 return -1;
             }
+            if (((c = fgetc(f)) == ARGO_RBRACK))
+            {
+                link(sent, last);
+                return 0;
+            }
+            else
+                ungetc(c, f);
+            argo_next_value++;
+            link((argo_value_storage + argo_next_value), last);
         }
         if (c == ARGO_QUOTE)
         {
@@ -128,9 +154,9 @@ int argo_read_array(ARGO_ARRAY *a, FILE *f)
                 fprintf(stderr, "Invalid string format at [%d,%d]\n", argo_lines_read, charPos);
                 return -1;
             }
-            if ((c = fgetc(f) == ARGO_RBRACK))
+            if (((c = fgetc(f)) == ARGO_RBRACK))
             {
-                link(sent, (argo_value_storage + argo_next_value));
+                link(sent, last);
                 return 0;
             }
             else
@@ -147,9 +173,9 @@ int argo_read_array(ARGO_ARRAY *a, FILE *f)
                 fprintf(stderr, "Invalid number format at [%d,%d]\n", argo_lines_read, argo_chars_read);
                 return -1;
             }
-            if ((c = fgetc(f) == ARGO_RBRACK))
+            if (((c = fgetc(f)) == ARGO_RBRACK))
             {
-                link(sent, (argo_value_storage + argo_next_value));
+                link(sent, last);
                 return 0;
             }
             else
@@ -166,9 +192,9 @@ int argo_read_array(ARGO_ARRAY *a, FILE *f)
                 fprintf(stderr, "Invalid basic format at [%d,%d]\n", argo_lines_read, argo_chars_read);
                 return -1;
             }
-            if ((c = fgetc(f) == ARGO_RBRACK))
+            if (((c = fgetc(f)) == ARGO_RBRACK))
             {
-                link(sent, (argo_value_storage + argo_next_value));
+                link(sent, last);
                 return 0;
             }
             else
@@ -176,6 +202,7 @@ int argo_read_array(ARGO_ARRAY *a, FILE *f)
             argo_next_value++;
             link((argo_value_storage + argo_next_value), (argo_value_storage + (argo_next_value - 1)));
         }
+        c = fgetc(f);
     }
     return -1;
 }
@@ -186,16 +213,24 @@ int argo_read_object(ARGO_OBJECT *o, FILE *f)
     argo_next_value++;
     *(argo_value_storage + argo_next_value) = *sent;
     o->member_list->type = ARGO_NO_TYPE;
-    argo_next_value++;
-    link((argo_value_storage + argo_next_value), (argo_value_storage + (argo_next_value - 1)));
-
     char c;
-    while ((c = fgetc(f)) != EOF)
+    c = fgetc(f);
+    charCounter(c);
+    if (c == ARGO_RBRACE)
+    {
+        link(sent, sent);
+        return 0;
+    }
+    argo_next_value++;
+    link((argo_value_storage + argo_next_value), sent);
+    ARGO_VALUE *last = (argo_value_storage + argo_next_value);
+    while (c != EOF)
     {
         charCounter(c);
+        last = (argo_value_storage + argo_next_value);
         if (c == ARGO_RBRACE)
         {
-            link(sent, (argo_value_storage + argo_next_value));
+            link(sent, last);
             return 0;
         }
 
@@ -206,7 +241,8 @@ int argo_read_object(ARGO_OBJECT *o, FILE *f)
                 fprintf(stderr, "Invalid string format at [%d,%d]\n", argo_lines_read, charPos);
                 return -1;
             }
-            while ((c = fgetc(f)) != EOF)
+            c = fgetc(f);
+            while (c != EOF)
             {
                 if (c == ARGO_LBRACE)
                 {
@@ -217,6 +253,15 @@ int argo_read_object(ARGO_OBJECT *o, FILE *f)
                         fprintf(stderr, "Invalid object format at [%d,%d]\n", argo_lines_read, charPos);
                         return -1;
                     }
+                    if (((c = fgetc(f)) == ARGO_RBRACE))
+                    {
+                        link(sent, last);
+                        return 0;
+                    }
+                    else
+                        ungetc(c, f);
+                    argo_next_value++;
+                    link((argo_value_storage + argo_next_value), last);
                     break;
                 }
                 if (c == ARGO_LBRACK)
@@ -228,15 +273,15 @@ int argo_read_object(ARGO_OBJECT *o, FILE *f)
                         fprintf(stderr, "Invalid array format at [%d,%d]\n", argo_lines_read, charPos);
                         return -1;
                     }
-                    if ((c = fgetc(f) == ARGO_RBRACE))
+                    if (((c = fgetc(f)) == ARGO_RBRACE))
                     {
-                        link(sent, (argo_value_storage + argo_next_value));
+                        link(sent, last);
                         return 0;
                     }
                     else
                         ungetc(c, f);
                     argo_next_value++;
-                    link((argo_value_storage + argo_next_value), (argo_value_storage + (argo_next_value - 1)));
+                    link((argo_value_storage + argo_next_value), last);
                     break;
                 }
                 if (c == ARGO_QUOTE)
@@ -247,9 +292,12 @@ int argo_read_object(ARGO_OBJECT *o, FILE *f)
                         fprintf(stderr, "Invalid string format at [%d,%d]\n", argo_lines_read, charPos);
                         return -1;
                     }
-                    if ((c = fgetc(f) == ARGO_RBRACE))
+                    c = fgetc(f);
+                    while (argo_is_whitespace(c))
+                        c = fgetc(f);
+                    if (c == ARGO_RBRACE)
                     {
-                        link(sent, (argo_value_storage + argo_next_value));
+                        link(sent, last);
                         return 0;
                     }
                     else
@@ -267,15 +315,19 @@ int argo_read_object(ARGO_OBJECT *o, FILE *f)
                         fprintf(stderr, "Invalid number format at [%d,%d]\n", argo_lines_read, argo_chars_read);
                         return -1;
                     }
-                    if (((c = fgetc(f)) == ARGO_RBRACE))
+                    c = fgetc(f);
+                    while (argo_is_whitespace(c))
+                        c = fgetc(f);
+                    if (c == ARGO_RBRACE)
                     {
-                        link(sent, (argo_value_storage + argo_next_value));
+                        link(sent, last);
                         return 0;
                     }
                     else
                         ungetc(c, f);
                     argo_next_value++;
                     link((argo_value_storage + argo_next_value), (argo_value_storage + (argo_next_value - 1)));
+                    break;
                 }
                 if ((c == 'n') || (c == 't') || (c == 'f'))
                 {
@@ -286,10 +338,24 @@ int argo_read_object(ARGO_OBJECT *o, FILE *f)
                         fprintf(stderr, "Invalid basic format at [%d,%d]\n", argo_lines_read, argo_chars_read);
                         return -1;
                     }
+                    c = fgetc(f);
+                    while (argo_is_whitespace(c))
+                        c = fgetc(f);
+                    if (c == ARGO_RBRACE)
+                    {
+                        link(sent, last);
+                        return 0;
+                    }
+                    else
+                        ungetc(c, f);
+                    argo_next_value++;
+                    link((argo_value_storage + argo_next_value), (argo_value_storage + (argo_next_value - 1)));
+                    break;
                 }
+                c = fgetc(f);
             }
-            return -1;
         }
+        c = fgetc(f);
     }
     return -1;
 }
@@ -444,6 +510,7 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
 {
     n->valid_string = 1;
     n->valid_int = 1;
+    n->valid_float = 1;
     int sign = 1;
     int expSign = 1;
     int exponent = 0;
@@ -482,29 +549,24 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
                 c = fgetc(f);
                 charCounter(c);
             }
-            while (c != EOF)
+            if (argo_is_exponent(c))
             {
-                if (argo_is_exponent(c))
+                c = fgetc(f);
+                charCounter(c);
+                if (c == ARGO_MINUS)
                 {
+                    argo_append_char(&n->string_value, c);
+                    expSign = -1;
                     c = fgetc(f);
                     charCounter(c);
-                    if (c == ARGO_MINUS)
-                    {
-                        argo_append_char(&n->string_value, c);
-                        expSign = -1;
-                        c = fgetc(f);
-                        charCounter(c);
-                    }
-                    while (argo_is_digit(c))
-                    {
-                        argo_append_char(&n->string_value, c);
-                        exponent = (exponent * 10) + (c - '0');
-                        c = fgetc(f);
-                        charCounter(c);
-                    }
-                    break;
                 }
-                c = fgetc(f);
+                while (argo_is_digit(c))
+                {
+                    argo_append_char(&n->string_value, c);
+                    exponent = (exponent * 10) + (c - '0');
+                    c = fgetc(f);
+                    charCounter(c);
+                }
             }
             n->valid_float = 1;
             n->valid_int = 0;
@@ -527,6 +589,7 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
                 c = fgetc(f);
                 charCounter(c);
             }
+            break;
         }
         if (!argo_is_digit(c))
         {
@@ -541,15 +604,33 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
     {
         while (exponent > 0)
         {
-            if (expSign == 1)
+            if (n->valid_int == 0)
             {
-                d = d * 10;
-                exponent--;
+                if (expSign == 1)
+                {
+                    d = d * 10;
+                    exponent--;
+                }
+                else
+                {
+                    d = d / 10;
+                    exponent--;
+                }
             }
             else
             {
-                d = d / 10;
-                exponent--;
+                if (expSign == 1)
+                {
+                    v = v * 10;
+                    d = d * 10;
+                    exponent--;
+                }
+                else
+                {
+                    v = v / 10;
+                    d = d * 10;
+                    exponent--;
+                }
             }
         }
     }
@@ -786,6 +867,29 @@ int argo_write_string(ARGO_STRING *s, FILE *f)
     fprintf(f, "%c", ARGO_QUOTE);
     for (int i = 0; i < s->length; i++)
     {
+        // if (*(s->content + i) < 32)
+        // {
+        //     if (*(s->content + i) == ARGO_BS)
+        //     {
+        //         fprintf(f, "\\b");
+        //     }
+        //     if (*(s->content + i) == ARGO_FF)
+        //     {
+        //         fprintf(f, "\\f");
+        //     }
+        //     if (*(s->content + i) == ARGO_LF)
+        //     {
+        //         fprintf(f, "\\n");
+        //     }
+        //     if (*(s->content + i) == ARGO_CR)
+        //     {
+        //         fprintf(f, "\\r");
+        //     }
+        //     if (*(s->content + i) == ARGO_HT)
+        //     {
+        //         fprintf(f, "\\t");
+        //     }
+        // }
         if (*(s->content + i) == 92)
         {
             fprintf(f, "\\\\");
@@ -825,8 +929,76 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
 {
     if (n->valid_int)
     {
-        fprintf(f, "%ld", n->int_value);
-        return 0;
+        double value = n->int_value;
+        int exponent = 0;
+        if (value > 0)
+        {
+            if (value > 1)
+            {
+                while (value >= 1)
+                {
+                    exponent++;
+                    value = value / 10;
+                }
+                fprintf(f, "%fe%d", value, exponent);
+                return 0;
+            }
+            else if (value < 1)
+            {
+                while (value <= 0.1)
+                {
+                    exponent++;
+                    value = value * 10;
+                }
+                if (exponent == 1)
+                {
+                    fprintf(f, "%f", n->float_value);
+                    return 0;
+                }
+                fprintf(f, "%fe-%d", value, exponent);
+                return 0;
+            }
+            fprintf(f, "1.0");
+            return 0;
+        }
+        if (value < 0)
+        {
+            if (value < -1)
+            {
+                while (value <= -1)
+                {
+                    exponent++;
+                    value = value / 10;
+                }
+                fprintf(f, "%fe%d", value, exponent);
+                return 0;
+            }
+            else if (value > -1)
+            {
+                while (value >= -0.1)
+                {
+                    exponent++;
+                    value = value * 10;
+                }
+                if (exponent == 1)
+                {
+                    fprintf(f, "%f", n->float_value);
+                    return 0;
+                }
+                fprintf(f, "%fe-%d", value, exponent);
+                return 0;
+            }
+            fprintf(f, "-1.0");
+            return 0;
+        }
+        else
+        {
+            if (value == 0.0)
+            {
+                fprintf(f, "0.0");
+                return 0;
+            }
+        }
     }
     if (n->valid_float)
     {
