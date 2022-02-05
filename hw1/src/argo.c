@@ -478,7 +478,60 @@ int argo_read_string(ARGO_STRING *s, FILE *f)
         {
             return 0;
         }
-        argo_append_char(s, c);
+        if (c == ARGO_BSLASH)
+        {
+            c = fgetc(f);
+            int i = 0;
+            if (c == ARGO_U)
+            {
+                c = fgetc(f);
+                int decimal = 0;
+                int base = 4096;
+                while (argo_is_hex(c))
+                {
+                    if (c >= '0' && c <= '9')
+                    {
+                        decimal += ((int)c - 48) * base;
+                        base /= 16;
+                    }
+                    else if (c >= 'A' && c <= 'F')
+                    {
+                        decimal += (c - 55) * base;
+                        base /= 16;
+                    }
+                    else if (c >= 'a' && c <= 'f')
+                    {
+                        decimal += (c - 87) * base;
+                        base /= 16;
+                    }
+                    c = fgetc(f);
+                }
+                argo_append_char(s, decimal);
+                ungetc(c, f);
+            }
+            else if (c == ARGO_B) {
+                argo_append_char(s, ARGO_BS);
+            }
+            else if (c == ARGO_F) {
+                argo_append_char(s, ARGO_FF);
+            }
+            else if (c == ARGO_N) {
+                argo_append_char(s, ARGO_CR);
+            }
+            else if (c == ARGO_R) {
+                argo_append_char(s, ARGO_CR);
+            }
+            else if (c == ARGO_T) {
+                argo_append_char(s, ARGO_HT);
+            }
+            else {
+                argo_append_char(s, c);
+            }
+        }
+        else
+        {
+            argo_append_char(s, c);
+        }
         c = fgetc(f);
     }
     return -1;
@@ -867,30 +920,34 @@ int argo_write_string(ARGO_STRING *s, FILE *f)
     fprintf(f, "%c", ARGO_QUOTE);
     for (int i = 0; i < s->length; i++)
     {
-        // if (*(s->content + i) < 32)
-        // {
-        //     if (*(s->content + i) == ARGO_BS)
-        //     {
-        //         fprintf(f, "\\b");
-        //     }
-        //     if (*(s->content + i) == ARGO_FF)
-        //     {
-        //         fprintf(f, "\\f");
-        //     }
-        //     if (*(s->content + i) == ARGO_LF)
-        //     {
-        //         fprintf(f, "\\n");
-        //     }
-        //     if (*(s->content + i) == ARGO_CR)
-        //     {
-        //         fprintf(f, "\\r");
-        //     }
-        //     if (*(s->content + i) == ARGO_HT)
-        //     {
-        //         fprintf(f, "\\t");
-        //     }
-        // }
-        if (*(s->content + i) == 92)
+        if (*(s->content + i) < 32)
+        {
+            if (*(s->content + i) == ARGO_BS)
+            {
+                fprintf(f, "\\b");
+            }
+            else if (*(s->content + i) == ARGO_FF)
+            {
+                fprintf(f, "\\f");
+            }
+            else if (*(s->content + i) == ARGO_LF)
+            {
+                fprintf(f, "\\n");
+            }
+            else if (*(s->content + i) == ARGO_CR)
+            {
+                fprintf(f, "\\r");
+            }
+            else if (*(s->content + i) == ARGO_HT)
+            {
+                fprintf(f, "\\t");
+            }
+            else
+            {
+                fprintf(f, "\\u%04x", *(s->content + i));
+            }
+        }
+        else if (*(s->content + i) == 92)
         {
             fprintf(f, "\\\\");
         }
@@ -898,7 +955,7 @@ int argo_write_string(ARGO_STRING *s, FILE *f)
         {
             fprintf(f, "\\\"");
         }
-        else
+        else if (*(s->content + i) >= 32)
         {
             fprintf(f, "%c", *(s->content + i));
         }

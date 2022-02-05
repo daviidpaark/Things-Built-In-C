@@ -28,29 +28,26 @@ int main(int argc, char **argv)
     {
         if (argo_read_value(stdin) != NULL)
             return EXIT_SUCCESS;
-        return EXIT_FAILURE;
     }
     else if (global_options == CANONICALIZE_OPTION)
     {
         ARGO_VALUE *head = argo_read_value(stdin);
         if (head != NULL)
         {
-            if (argo_write_value(head, stdout))
+            if (argo_write_value(head, stdout) == 0)
                 return EXIT_SUCCESS;
         }
-        return EXIT_FAILURE;
     }
     else if (global_options >= (CANONICALIZE_OPTION | PRETTY_PRINT_OPTION))
     {
         ARGO_VALUE *head = argo_read_value(stdin);
         if (head != NULL)
         {
-            if (argo_write_value(head, stdout))
+            if (argo_write_value(head, stdout) == 0)
                 return EXIT_SUCCESS;
         }
-        return EXIT_FAILURE;
     }
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
 /*
