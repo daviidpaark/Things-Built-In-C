@@ -516,7 +516,7 @@ int argo_read_string(ARGO_STRING *s, FILE *f)
                 argo_append_char(s, ARGO_FF);
             }
             else if (c == ARGO_N) {
-                argo_append_char(s, ARGO_CR);
+                argo_append_char(s, ARGO_LF);
             }
             else if (c == ARGO_R) {
                 argo_append_char(s, ARGO_CR);
