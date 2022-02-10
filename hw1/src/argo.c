@@ -567,7 +567,7 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
     int sign = 1;
     int expSign = 1;
     int exponent = 0;
-    long int v = 0;
+    long v = 0;
     double d = 0.0;
     char c;
     c = fgetc(f);
@@ -583,6 +583,7 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
         }
         if (c == ARGO_PERIOD)
         {
+            argo_append_char(&n->string_value, c);
             d = (double)v;
             int i = 1;
             c = fgetc(f);
@@ -604,6 +605,7 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
             }
             if (argo_is_exponent(c))
             {
+                argo_append_char(&n->string_value, c);
                 c = fgetc(f);
                 charCounter(c);
                 if (c == ARGO_MINUS)
@@ -626,6 +628,7 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
         }
         if (argo_is_exponent(c))
         {
+            argo_append_char(&n->string_value, c);
             c = fgetc(f);
             charCounter(c);
             if (c == ARGO_MINUS)
@@ -986,6 +989,11 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
 {
     if (n->valid_int)
     {
+        if (n->int_value <= __LONG_MAX__)
+        {
+            fprintf(f, "%ld", n->int_value);
+            return 0;
+        }
         double value = n->int_value;
         int exponent = 0;
         if (value > 0)
