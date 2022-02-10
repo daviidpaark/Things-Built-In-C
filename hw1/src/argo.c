@@ -871,6 +871,10 @@ int argo_write_value(ARGO_VALUE *v, FILE *f)
         argo_write_object(&v->content.object, f);
         fprintf(f, "%c", ARGO_RBRACE);
         indent(f);
+        if (global_options == CANONICALIZE_OPTION)
+        {
+            fprintf(f, "\n");
+        }
     }
     if (v->type == ARGO_ARRAY_TYPE)
     {
@@ -879,6 +883,10 @@ int argo_write_value(ARGO_VALUE *v, FILE *f)
         argo_write_array(&v->content.array, f);
         fprintf(f, "%c", ARGO_RBRACK);
         indent(f);
+        if (global_options == CANONICALIZE_OPTION)
+        {
+            fprintf(f, "\n");
+        }
     }
     if (v->type == ARGO_NUMBER_TYPE)
     {
