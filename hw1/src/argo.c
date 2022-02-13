@@ -509,22 +509,28 @@ int argo_read_string(ARGO_STRING *s, FILE *f)
                 argo_append_char(s, decimal);
                 ungetc(c, f);
             }
-            else if (c == ARGO_B) {
+            else if (c == ARGO_B)
+            {
                 argo_append_char(s, ARGO_BS);
             }
-            else if (c == ARGO_F) {
+            else if (c == ARGO_F)
+            {
                 argo_append_char(s, ARGO_FF);
             }
-            else if (c == ARGO_N) {
+            else if (c == ARGO_N)
+            {
                 argo_append_char(s, ARGO_LF);
             }
-            else if (c == ARGO_R) {
+            else if (c == ARGO_R)
+            {
                 argo_append_char(s, ARGO_CR);
             }
-            else if (c == ARGO_T) {
+            else if (c == ARGO_T)
+            {
                 argo_append_char(s, ARGO_HT);
             }
-            else {
+            else
+            {
                 argo_append_char(s, c);
             }
         }
@@ -629,6 +635,7 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
         if (argo_is_exponent(c))
         {
             argo_append_char(&n->string_value, c);
+            d = (double)v;
             c = fgetc(f);
             charCounter(c);
             if (c == ARGO_MINUS)
@@ -645,6 +652,8 @@ int argo_read_number(ARGO_NUMBER *n, FILE *f)
                 c = fgetc(f);
                 charCounter(c);
             }
+            n->valid_float = 1;
+            n->valid_int = 0;
             break;
         }
         if (!argo_is_digit(c))
@@ -1091,7 +1100,7 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
             }
             else if (value < 1)
             {
-                while (value <= 0.1)
+                while (value < 0.1)
                 {
                     exponent++;
                     value = value * 10;
