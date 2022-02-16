@@ -799,7 +799,11 @@ int argo_write_object(ARGO_OBJECT *o, FILE *f)
         if (head->type == ARGO_OBJECT_TYPE)
         {
             argo_write_string(&head->name, f);
-            fprintf(f, "%c ", ARGO_COLON);
+            fprintf(f, "%c", ARGO_COLON);
+            if (global_options != CANONICALIZE_OPTION)
+            {
+                fprintf(f, "%c", ARGO_SPACE);
+            }
 
             fprintf(f, "%c", ARGO_LBRACE);
             level++;
@@ -812,7 +816,11 @@ int argo_write_object(ARGO_OBJECT *o, FILE *f)
         if (head->type == ARGO_ARRAY_TYPE)
         {
             argo_write_string(&head->name, f);
-            fprintf(f, "%c ", ARGO_COLON);
+            fprintf(f, "%c", ARGO_COLON);
+            if (global_options != CANONICALIZE_OPTION)
+            {
+                fprintf(f, "%c", ARGO_SPACE);
+            }
 
             fprintf(f, "%c", ARGO_LBRACK);
             level++;
@@ -825,21 +833,33 @@ int argo_write_object(ARGO_OBJECT *o, FILE *f)
         if (head->type == ARGO_STRING_TYPE)
         {
             argo_write_string(&head->name, f);
-            fprintf(f, "%c ", ARGO_COLON);
+            fprintf(f, "%c", ARGO_COLON);
+            if (global_options != CANONICALIZE_OPTION)
+            {
+                fprintf(f, "%c", ARGO_SPACE);
+            }
 
             argo_write_string(&head->content.string, f);
         }
         if (head->type == ARGO_NUMBER_TYPE)
         {
             argo_write_string(&head->name, f);
-            fprintf(f, "%c ", ARGO_COLON);
+            fprintf(f, "%c", ARGO_COLON);
+            if (global_options != CANONICALIZE_OPTION)
+            {
+                fprintf(f, "%c", ARGO_SPACE);
+            }
 
             argo_write_number(&head->content.number, f);
         }
         if (head->type == ARGO_BASIC_TYPE)
         {
             argo_write_string(&head->name, f);
-            fprintf(f, "%c ", ARGO_COLON);
+            fprintf(f, "%c", ARGO_COLON);
+            if (global_options != CANONICALIZE_OPTION)
+            {
+                fprintf(f, "%c", ARGO_SPACE);
+            }
 
             argo_write_basic(&head->content.basic, f);
         }
@@ -880,10 +900,10 @@ int argo_write_value(ARGO_VALUE *v, FILE *f)
         argo_write_object(&v->content.object, f);
         fprintf(f, "%c", ARGO_RBRACE);
         indent(f);
-        if (global_options == CANONICALIZE_OPTION)
-        {
-            fprintf(f, "\n");
-        }
+        // if (global_options == CANONICALIZE_OPTION)
+        // {
+        //     fprintf(f, "\n");
+        // }
     }
     if (v->type == ARGO_ARRAY_TYPE)
     {
@@ -892,10 +912,10 @@ int argo_write_value(ARGO_VALUE *v, FILE *f)
         argo_write_array(&v->content.array, f);
         fprintf(f, "%c", ARGO_RBRACK);
         indent(f);
-        if (global_options == CANONICALIZE_OPTION)
-        {
-            fprintf(f, "\n");
-        }
+        // if (global_options == CANONICALIZE_OPTION)
+        // {
+        //     fprintf(f, "\n");
+        // }
     }
     if (v->type == ARGO_NUMBER_TYPE)
     {
