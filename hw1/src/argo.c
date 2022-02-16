@@ -918,17 +918,26 @@ int argo_write_value(ARGO_VALUE *v, FILE *f)
     if (v->type == ARGO_NUMBER_TYPE)
     {
         argo_write_number(&v->content.number, f);
-        fprintf(f, "\n");
+        if (global_options != CANONICALIZE_OPTION)
+        {
+            fprintf(f, "\n");
+        }
     }
     if (v->type == ARGO_STRING_TYPE)
     {
         argo_write_string(&v->content.string, f);
-        fprintf(f, "\n");
+        if (global_options != CANONICALIZE_OPTION)
+        {
+            fprintf(f, "\n");
+        }
     }
     if (v->type == ARGO_BASIC_TYPE)
     {
         argo_write_basic(&v->content.basic, f);
-        fprintf(f, "\n");
+        if (global_options != CANONICALIZE_OPTION)
+        {
+            fprintf(f, "\n");
+        }
     }
     return 0;
 }
