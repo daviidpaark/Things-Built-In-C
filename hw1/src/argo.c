@@ -1022,7 +1022,7 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                     exponent++;
                     value = value / 10;
                 }
-                fprintf(f, "%fe%d", value, exponent);
+                fprintf(f, "%.*fe%d", ARGO_PRECISION, value, exponent);
                 return 0;
             }
             else if (value < 1)
@@ -1034,10 +1034,10 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                 }
                 if (exponent == 1)
                 {
-                    fprintf(f, "%f", n->float_value);
+                    fprintf(f, "%.*f", ARGO_PRECISION, n->float_value);
                     return 0;
                 }
-                fprintf(f, "%fe-%d", value, exponent);
+                fprintf(f, "%.*fe-%d", ARGO_PRECISION, value, exponent);
                 return 0;
             }
             fprintf(f, "1.0");
@@ -1052,7 +1052,7 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                     exponent++;
                     value = value / 10;
                 }
-                fprintf(f, "%fe%d", value, exponent);
+                fprintf(f, "%.*fe%d", ARGO_PRECISION, value, exponent);
                 return 0;
             }
             else if (value > -1)
@@ -1064,10 +1064,10 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                 }
                 if (exponent == 1)
                 {
-                    fprintf(f, "%f", n->float_value);
+                    fprintf(f, "%.*f", ARGO_PRECISION, n->float_value);
                     return 0;
                 }
-                fprintf(f, "%fe-%d", value, exponent);
+                fprintf(f, "%.*fe-%d", ARGO_PRECISION, value, exponent);
                 return 0;
             }
             fprintf(f, "-1.0");
@@ -1095,7 +1095,7 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                     exponent++;
                     value = value / 10;
                 }
-                fprintf(f, "%fe%d", value, exponent);
+                fprintf(f, "%.*fe%d", ARGO_PRECISION, value, exponent);
                 return 0;
             }
             else if (value < 1)
@@ -1107,10 +1107,10 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                 }
                 if (exponent == 1)
                 {
-                    fprintf(f, "%f", n->float_value);
+                    fprintf(f, "%.*f", ARGO_PRECISION, n->float_value);
                     return 0;
                 }
-                fprintf(f, "%fe-%d", value, exponent);
+                fprintf(f, "%.*fe-%d", ARGO_PRECISION, value, exponent);
                 return 0;
             }
             fprintf(f, "1.0");
@@ -1125,7 +1125,7 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                     exponent++;
                     value = value / 10;
                 }
-                fprintf(f, "%fe%d", value, exponent);
+                fprintf(f, "%.*fe%d", ARGO_PRECISION, value, exponent);
                 return 0;
             }
             else if (value > -1)
@@ -1137,10 +1137,10 @@ int argo_write_number(ARGO_NUMBER *n, FILE *f)
                 }
                 if (exponent == 1)
                 {
-                    fprintf(f, "%f", n->float_value);
+                    fprintf(f, "%.*f", ARGO_PRECISION, n->float_value);
                     return 0;
                 }
-                fprintf(f, "%fe-%d", value, exponent);
+                fprintf(f, "%.*fe-%d", ARGO_PRECISION, value, exponent);
                 return 0;
             }
             fprintf(f, "-1.0");
