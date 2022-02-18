@@ -951,7 +951,7 @@ int argo_write_string(ARGO_STRING *s, FILE *f)
     fprintf(f, "%c", ARGO_QUOTE);
     for (int i = 0; i < s->length; i++)
     {
-        if (*(s->content + i) < 32)
+        if (*(s->content + i) < 32 || *(s->content + i) > 255)
         {
             if (*(s->content + i) == ARGO_BS)
             {
