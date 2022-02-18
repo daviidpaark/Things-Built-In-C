@@ -531,7 +531,7 @@ int argo_read_string(ARGO_STRING *s, FILE *f)
             }
             else
             {
-                argo_append_char(s, c);
+                return -1;
             }
         }
         else
