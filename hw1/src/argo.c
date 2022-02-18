@@ -529,6 +529,14 @@ int argo_read_string(ARGO_STRING *s, FILE *f)
             {
                 argo_append_char(s, ARGO_HT);
             }
+            else if (c == ARGO_QUOTE)
+            {
+                argo_append_char(s, ARGO_QUOTE);
+            }
+            else if (c == ARGO_BSLASH)
+            {
+                argo_append_char(s, ARGO_BSLASH);
+            }
             else
             {
                 return -1;
