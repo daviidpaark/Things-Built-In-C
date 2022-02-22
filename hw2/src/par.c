@@ -234,7 +234,7 @@ static void setdefaults(
       start = *inlines;
       for (end = start;  *end;  ++end);
       for (line = inlines + 1;  *line;  ++line) {
-        for (p2 = *line;  *p2;  ++p2)
+        for (p2 = *line;  *p2;  ++p2);
         for (p1 = end;
              p1 > start && p2 > *line && p1[-1] == p2[-1];
              --p1, --p2);

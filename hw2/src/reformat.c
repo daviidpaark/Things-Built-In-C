@@ -192,6 +192,7 @@ char **reformat(const char * const *inlines, int width,
   for (line = inlines, suf = suffixes;  *line;  ++line, ++suf) {
     for (end = *line;  *end;  ++end);
     if (end - *line < affix) {
+      outlines = NULL;
       sprintf(errmsg,
               "Line %ld shorter than <prefix> + <suffix> = %d + %d = %d\n",
               line - inlines + 1, prefix, suffix, affix);
