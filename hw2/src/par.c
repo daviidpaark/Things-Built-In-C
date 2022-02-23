@@ -17,13 +17,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <getopt.h>
+
 #undef NULL
 #define NULL ((void *) 0)
 
 
 const char * const progname = "par";
 const char * const version = "3.20";
-
 
 static int digtoint(char c)
 
@@ -80,11 +81,14 @@ static void parseopt(
   const char *saveopt = opt;
   char oc;
   int n, r;
+  char * errmsg = (char *)malloc(200);
 
   if (*opt == '-') ++opt;
 
   if (!strcmp(opt, "version")) {
     sprintf(errmsg, "%s %s\n", progname, version);
+    set_error(errmsg);
+    free(errmsg);
     return;
   }
 
@@ -115,11 +119,14 @@ static void parseopt(
     else goto badopt;
   }
 
-  *errmsg = '\0';
+  clear_error();
+  free(errmsg);
   return;
 
 badopt:
   sprintf(errmsg, "Bad option: %.149s\n", saveopt);
+  set_error(errmsg);
+  free(errmsg);
 }
 
 
@@ -135,9 +142,9 @@ static char **readlines(void)
   char ch, *ln, *nullline = NULL, nullchar = '\0', **lines = NULL;
 
   cbuf = newbuffer(sizeof (char));
-  if (*errmsg) goto rlcleanup;
+  if (is_error()) goto rlcleanup;
   pbuf = newbuffer(sizeof (char *));
-  if (*errmsg) goto rlcleanup;
+  if (is_error()) goto rlcleanup;
 
   for (blank = 1;  ; ) {
     c = getchar();
@@ -148,11 +155,11 @@ static char **readlines(void)
         break;
       }
       additem(cbuf, &nullchar);
-      if (*errmsg) goto rlcleanup;
+      if (is_error()) goto rlcleanup;
       ln = copyitems(cbuf);
-      if (*errmsg) goto rlcleanup;
+      if (is_error()) goto rlcleanup;
       additem(pbuf, &ln);
-      if (*errmsg) goto rlcleanup;
+      if (is_error()) goto rlcleanup;
       clearbuffer(cbuf);
       blank = 1;
     }
@@ -160,21 +167,21 @@ static char **readlines(void)
       if (!isspace(c)) blank = 0;
       ch = c;
       additem(cbuf, &ch);
-      if (*errmsg) goto rlcleanup;
+      if (is_error()) goto rlcleanup;
     }
   }
 
   if (!blank) {
     additem(cbuf, &nullchar);
-    if (*errmsg) goto rlcleanup;
+    if (is_error()) goto rlcleanup;
     ln = copyitems(cbuf);
-    if (*errmsg) goto rlcleanup;
+    if (is_error()) goto rlcleanup;
     additem(pbuf, &ln);
-    if (*errmsg) goto rlcleanup;
+    if (is_error()) goto rlcleanup;
   }
 
   additem(pbuf, &nullline);
-  if (*errmsg) goto rlcleanup;
+  if (is_error()) goto rlcleanup;
   lines = copyitems(pbuf);
 
 rlcleanup:
@@ -260,7 +267,7 @@ static void freelines(char **lines)
 }
 
 
-int original_main(int argc, const char * const *argv)
+int original_main(int argc, char * const *argv)
 {
   int width, widthbak = -1, prefix, prefixbak = -1, suffix, suffixbak = -1,
       hang, hangbak = -1, last, lastbak = -1, min, minbak = -1, c;
@@ -268,11 +275,28 @@ int original_main(int argc, const char * const *argv)
        **line;
   const char * const whitechars = " \f\n\r\t\v";
 
+  const char * const shortForm = "w:p:s:h:l:m:";
+  const struct option longForm[] = 
+  {
+    { "version", 0, NULL, 'v' },
+    { "width",   1, NULL, 'w' },
+    { "prefix",  1, NULL, 'p' },
+    { "suffix",  1, NULL, 's' },
+    { "hang",    1, NULL, 'h' },
+    { "last",    0, NULL, 'L' },
+    { "min",     0, NULL, 'M' },
+    { "no-last", 0, NULL, 'K' },
+    { "no-min",  0, NULL, 'N' },
+    {  0,        0, 0,     0  }
+  };
+  int args;
+  char * errmsg = (char *)malloc(200);
+
   parinit = getenv("PARINIT");
   if (parinit) {
     picopy = malloc((strlen(parinit) + 1) * sizeof (char));
     if (!picopy) {
-      strcpy(errmsg,outofmem);
+      set_error(outofmem);
       goto parcleanup;
     }
     strcpy(picopy,parinit);
@@ -280,18 +304,63 @@ int original_main(int argc, const char * const *argv)
     while (opt) {
       parseopt(opt, &widthbak, &prefixbak,
                &suffixbak, &hangbak, &lastbak, &minbak);
-      if (*errmsg) goto parcleanup;
+      if (is_error()) goto parcleanup;
       opt = strtok(NULL,whitechars);
     }
     free(picopy);
     picopy = NULL;
   }
 
-  while (*++argv) {
-    parseopt(*argv, &widthbak, &prefixbak,
-             &suffixbak, &hangbak, &lastbak, &minbak);
-    if (*errmsg) goto parcleanup;
-  }
+  do {
+    args = getopt_long(argc, argv, shortForm, longForm, NULL);
+    if (optarg) {
+      if (args == 'l' || args == 'm') continue;
+      else if (atoi(optarg) == 0) {
+        sprintf(errmsg ,"bin/par: unrecognized argument '%s' for option '-%c'\n", optarg, args);
+        set_error(errmsg);
+        goto parcleanup;
+      }
+    }
+    switch (args)
+    {
+      case 'w':
+        widthbak = atoi(optarg);
+        break;
+      case 'p':
+        prefixbak = atoi(optarg);
+        break;
+      case 's':
+        suffixbak = atoi(optarg);
+        break;
+      case 'h':
+        hangbak = atoi(optarg);
+        break;
+      case 'l':
+        lastbak = atoi(optarg);
+        break;
+      case 'm':
+        minbak = atoi(optarg);
+        break;
+      case 'L':
+        lastbak = 1;
+        break;
+      case 'M':
+        minbak = 1;
+        break;
+      case 'K':
+        lastbak = 0;
+        break;
+      case 'N':
+        minbak = 0;
+        break;
+      case 'v':
+        sprintf(errmsg,"%s %s\n", progname, version);
+        set_error(errmsg);
+        goto parcleanup;
+      case '?':
+        goto parcleanup;
+    }
+  } while (args != -1);
 
   for (;;) {
     for (;;) {
@@ -303,7 +372,7 @@ int original_main(int argc, const char * const *argv)
     ungetc(c,stdin);
 
     inlines = readlines();
-    if (*errmsg) goto parcleanup;
+    if (is_error()) goto parcleanup;
     if (!*inlines) {
       free(inlines);
       inlines = NULL;
@@ -317,7 +386,7 @@ int original_main(int argc, const char * const *argv)
 
     outlines = reformat((const char * const *) inlines,
                         width, prefix, suffix, hang, last, min);
-    if (*errmsg) goto parcleanup;
+    if (is_error()) goto parcleanup;
 
     freelines(inlines);
     inlines = NULL;
@@ -334,9 +403,11 @@ parcleanup:
   if (picopy) free(picopy);
   if (inlines) freelines(inlines);
   if (outlines) freelines(outlines);
+  if (errmsg) free(errmsg);
 
-  if (*errmsg) {
-    fprintf(stderr, "%.163s", errmsg);
+  if (is_error()) {
+    report_error(stderr);
+    clear_error();
     exit(EXIT_FAILURE);
   }
 
