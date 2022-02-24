@@ -354,8 +354,8 @@ int original_main(int argc, char * const *argv)
         minbak = 0;
         break;
       case 'v':
-        sprintf(errmsg,"%s %s\n", progname, version);
-        fprintf(stdout, errmsg);
+        sprintf(errmsg, "%s %s\n", progname, version);
+        fprintf(stdout, "%s", errmsg);
         goto parcleanup;
       case '?':
         goto parcleanup;
