@@ -275,7 +275,7 @@ int original_main(int argc, char * const *argv)
        **line;
   const char * const whitechars = " \f\n\r\t\v";
 
-  const char * const shortForm = "w:p:s:h:l:m:";
+  const char * const shortForm = "w:p:s:hlm";
   const struct option longForm[] = 
   {
     { "version", 0, NULL, 'v' },
@@ -333,13 +333,22 @@ int original_main(int argc, char * const *argv)
         suffixbak = atoi(optarg);
         break;
       case 'h':
-        hangbak = atoi(optarg);
+        if (optarg) {
+          hangbak = atoi(optarg);
+        }
+        else hangbak = 1;
         break;
       case 'l':
-        lastbak = atoi(optarg);
+        if (optarg) {
+          lastbak = atoi(optarg);
+        }
+        else lastbak = 1;
         break;
       case 'm':
-        minbak = atoi(optarg);
+        if (optarg) {
+          minbak = atoi(optarg);
+        }
+        else minbak = 1;
         break;
       case 'L':
         lastbak = 1;
@@ -361,6 +370,14 @@ int original_main(int argc, char * const *argv)
         goto parcleanup;
     }
   } while (args != -1);
+
+  if (optind <= argc) {
+    while (*++argv) { 
+      int n = atoi(*argv);
+      if (n <= 8) prefixbak = n;
+      else if (n >= 9) widthbak = n;
+    }
+  }
 
   for (;;) {
     for (;;) {
