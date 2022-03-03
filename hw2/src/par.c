@@ -371,7 +371,7 @@ int original_main(int argc, char * const *argv)
     }
   } while (args != -1);
 
-  if (optind <= argc) {
+  if (optind < argc) {
     while (*++argv) { 
       int n = atoi(*argv);
       if (n <= 8) prefixbak = n;
