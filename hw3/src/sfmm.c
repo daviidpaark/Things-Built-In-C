@@ -20,10 +20,10 @@ void placeFreeBlock(sf_size_t size, sf_block *block)
             range[i] = 1;
             if (size == range[i] * 32)
             {
-                sf_free_list_heads[i].body.links.prev->body.links.next = block;
-                block->body.links.prev = sf_free_list_heads[i].body.links.prev;
-                sf_free_list_heads[i].body.links.prev = block;
-                block->body.links.next = &sf_free_list_heads[i];
+                sf_free_list_heads[i].body.links.next->body.links.prev = block;
+                block->body.links.next = sf_free_list_heads[i].body.links.next;
+                sf_free_list_heads[i].body.links.next = block;
+                block->body.links.prev = &sf_free_list_heads[i];
                 return;
             }
         }
@@ -32,10 +32,10 @@ void placeFreeBlock(sf_size_t size, sf_block *block)
             range[i] = range[i - 1];
             if (size >= (range[i] * 32))
             {
-                sf_free_list_heads[i].body.links.prev->body.links.next = block;
-                block->body.links.prev = sf_free_list_heads[i].body.links.prev;
-                sf_free_list_heads[i].body.links.prev = block;
-                block->body.links.next = &sf_free_list_heads[i];
+                sf_free_list_heads[i].body.links.next->body.links.prev = block;
+                block->body.links.next = sf_free_list_heads[i].body.links.next;
+                sf_free_list_heads[i].body.links.next = block;
+                block->body.links.prev = &sf_free_list_heads[i];
                 return;
             }
         }
@@ -44,11 +44,73 @@ void placeFreeBlock(sf_size_t size, sf_block *block)
             range[i] = 2 * range[i - 1];
             if (size > (range[i - 1] * 32) && size <= (range[i] * 32))
             {
-                sf_free_list_heads[i].body.links.prev->body.links.next = block;
-                block->body.links.prev = sf_free_list_heads[i].body.links.prev;
-                sf_free_list_heads[i].body.links.prev = block;
-                block->body.links.next = &sf_free_list_heads[i];
+                sf_free_list_heads[i].body.links.next->body.links.prev = block;
+                block->body.links.next = sf_free_list_heads[i].body.links.next;
+                sf_free_list_heads[i].body.links.next = block;
+                block->body.links.prev = &sf_free_list_heads[i];
                 return;
+            }
+        }
+    }
+}
+
+void removeFreeBlock(sf_size_t size, sf_block *block)
+{
+    int range[NUM_FREE_LISTS];
+    for (int i = 0; i < NUM_FREE_LISTS; i++)
+    {
+        if (i == 0)
+        {
+            range[i] = 1;
+            if (size == range[i] * 32)
+            {
+                sf_block *current = sf_free_list_heads[i].body.links.next;
+                while (current != &sf_free_list_heads[i])
+                {
+                    if (block == current)
+                    {
+                        current->body.links.prev->body.links.next = current->body.links.next;
+                        current->body.links.next->body.links.prev = current->body.links.prev;
+                        return;
+                    }
+                    current = current->body.links.next;
+                }
+            }
+        }
+        else if (i == NUM_FREE_LISTS - 1)
+        {
+            range[i] = range[i - 1];
+            if (size >= (range[i] * 32))
+            {
+                sf_block *current = sf_free_list_heads[i].body.links.next;
+                while (current != &sf_free_list_heads[i])
+                {
+                    if (block == current)
+                    {
+                        current->body.links.prev->body.links.next = current->body.links.next;
+                        current->body.links.next->body.links.prev = current->body.links.prev;
+                        return;
+                    }
+                    current = current->body.links.next;
+                }
+            }
+        }
+        else
+        {
+            range[i] = 2 * range[i - 1];
+            if (size > (range[i - 1] * 32) && size <= (range[i] * 32))
+            {
+                sf_block *current = sf_free_list_heads[i].body.links.next;
+                while (current != &sf_free_list_heads[i])
+                {
+                    if (block == current)
+                    {
+                        current->body.links.prev->body.links.next = current->body.links.next;
+                        current->body.links.next->body.links.prev = current->body.links.prev;
+                        return;
+                    }
+                    current = current->body.links.next;
+                }
             }
         }
     }
@@ -58,32 +120,63 @@ sf_block *coalesce(sf_size_t size, sf_block *block)
 {
     sf_header *nextHeader = &block->header;
     nextHeader = nextHeader + (size / 8);
-    if (block->prev_footer)
+    if (block->prev_footer && *nextHeader)
+    {
+        if (((block->prev_footer ^ MAGIC) & 0xF) == 0)
+        {
+            sf_size_t prevSize = (block->prev_footer ^ MAGIC) & 0xFFFFFFF0;
+            sf_header *prevHeader = &block->header;
+            prevHeader = (prevHeader - (prevSize / 8));
+            sf_block *prevBlock = (sf_block *)(prevHeader - 1);
+            removeFreeBlock(prevSize, prevBlock);
+            sf_footer *footer = &block->header;
+            footer = footer + ((size / 8) - 1);
+            *prevHeader = (prevSize + size) ^ MAGIC;
+            *footer = *prevHeader;
+            sf_block *newBlock = (sf_block *)(prevHeader - 1);
+            if (((*nextHeader ^ MAGIC) & 0xF) != 0)
+                return newBlock;
+        }
+        if (((*nextHeader ^ MAGIC) & 0xF) == 0)
+        {
+            sf_size_t nextSize = (*nextHeader ^ MAGIC) & 0xFFFFFFF0;
+            sf_block *nextBlock = (sf_block *)(nextHeader - 1);
+            removeFreeBlock(nextSize, nextBlock);
+            sf_footer *footer = nextHeader;
+            footer = footer + ((nextSize / 8) - 1);
+            block->header = (size + nextSize) ^ MAGIC;
+            *footer = block->header;
+            return block;
+        }
+    }
+    else if (block->prev_footer)
     {
         if (((block->prev_footer ^ MAGIC) & 0xF) == 0)
         {
             sf_size_t prevSize = (block->prev_footer ^ MAGIC) & 0xFFFFFFF0;
             sf_header *prevHeader = &block->header;
             prevHeader = prevHeader - (prevSize / 8);
+            sf_block *prevBlock = (sf_block *)(prevHeader - 1);
+            removeFreeBlock(prevSize, prevBlock);
             sf_footer *footer = &block->header;
             footer = footer + ((size / 8) - 1);
             *prevHeader = (prevSize + size) ^ MAGIC;
             *footer = *prevHeader;
-            sf_block *newBlock = (sf_block *)prevHeader;
-
+            sf_block *newBlock = (sf_block *)(prevHeader - 1);
             return newBlock;
         }
     }
-    if (*nextHeader)
+    else if (*nextHeader)
     {
         if (((*nextHeader ^ MAGIC) & 0xF) == 0)
         {
             sf_size_t nextSize = (*nextHeader ^ MAGIC) & 0xFFFFFFF0;
+            sf_block *nextBlock = (sf_block *)(nextHeader - 1);
+            removeFreeBlock(nextSize, nextBlock);
             sf_footer *footer = nextHeader;
             footer = footer + ((nextSize / 8) - 1);
             block->header = (size + nextSize) ^ MAGIC;
             *footer = block->header;
-
             return block;
         }
     }
@@ -95,10 +188,7 @@ int initializeHeap(sf_size_t initSize)
     initSize += 48;
     for (sf_size_t i = 0; i < initSize; i += PAGE_SZ)
     {
-        if (sf_mem_grow() == NULL)
-        {
-            return -1;
-        }
+        sf_mem_grow();
     }
     // Prologue
     sf_header *hdr = sf_mem_start();
@@ -147,6 +237,7 @@ void insertQuick(sf_size_t size, sf_block *block)
             else if (sf_quick_lists[i].length == QUICK_LIST_MAX)
             {
                 sf_block *newBlock;
+                block->header = (size | THIS_BLOCK_ALLOCATED | IN_QUICK_LIST) ^ MAGIC;
                 for (int j = 0; j < QUICK_LIST_MAX; j++)
                 {
                     sf_block *tempBlock = sf_quick_lists[i].first;
@@ -164,7 +255,6 @@ void insertQuick(sf_size_t size, sf_block *block)
                 sf_quick_lists[i].length = 0;
                 sf_quick_lists[i].first = block;
                 sf_quick_lists[i].length++;
-                block->header = (size | THIS_BLOCK_ALLOCATED | IN_QUICK_LIST) ^ MAGIC;
                 return;
             }
             else
@@ -312,7 +402,11 @@ void sf_free(void *pp)
         sf_footer *ftr = &block->header;
         ftr = ftr + (size / 8 - 1);
         *ftr = block->header;
-        coalesce(size, block);
+        sf_block *newBlock = coalesce(size, block);
+        if (newBlock != NULL)
+            placeFreeBlock(size, newBlock);
+        else
+            placeFreeBlock(size, block);
     }
 }
 
