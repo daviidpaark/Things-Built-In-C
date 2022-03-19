@@ -564,12 +564,44 @@ void *sf_realloc(void *pp, sf_size_t rsize)
 
 double sf_internal_fragmentation()
 {
-    // TO BE IMPLEMENTED
-    abort();
+    if (sf_mem_start() == sf_mem_end())
+        return 0.0;
+    sf_header *start = sf_mem_start();
+    start += 5;
+    sf_header payload = 0;
+    sf_header blocks = 0;
+    while (((*start ^ MAGIC) & 0xFFFFFFF0) != 0)
+    {
+        if (((*start ^ MAGIC) & 0xFFFFFFF0) < (sf_mem_end() - sf_mem_start()))
+        {
+            if ((((*start ^ MAGIC) & 0xF) & THIS_BLOCK_ALLOCATED))
+            {
+                payload += (*start ^ MAGIC) >> 32;
+                blocks += ((*start ^ MAGIC) & 0xFFFFFFF0);
+            }
+        }
+        start += 2;
+    }
+    return (double)payload / (double)blocks;
 }
 
 double sf_peak_utilization()
 {
-    // TO BE IMPLEMENTED
-    abort();
+    if (sf_mem_start() == sf_mem_end())
+        return 0.0;
+    sf_header *start = sf_mem_start();
+    start += 5;
+    sf_header payload = 0;
+    while (((*start ^ MAGIC) & 0xFFFFFFF0) != 0)
+    {
+        if (((*start ^ MAGIC) & 0xFFFFFFF0) < (sf_mem_end() - sf_mem_start()))
+        {
+            if ((((*start ^ MAGIC) & 0xF) & THIS_BLOCK_ALLOCATED))
+            {
+                payload += (*start ^ MAGIC) >> 32;
+            }
+        }
+        start += 2;
+    }
+    return (double)payload / (double)(sf_mem_end() - sf_mem_start());
 }
