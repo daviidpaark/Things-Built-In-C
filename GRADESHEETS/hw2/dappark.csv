@@ -19,7 +19,7 @@ blackbox_suite/short_last,0,1,1 assertion(s) failed.: tests/test_common.c:125: T
 blackbox_suite/short_min,0,1,1 assertion(s) failed.: tests/test_common.c:125: The output was not what was expected (diff exited with status 1).
 blackbox_suite/short_prefix,1,1,
 blackbox_suite/valgrind_mixed_wps,1,1,
-blackbox_suite/valgrind_mixed_wpsh,0,1,The test timed out.: None
+blackbox_suite/valgrind_mixed_wpsh,0,1,1 assertion(s) failed.: tests/test_common.c:125: The output was not what was expected (diff exited with status 1).
 error_suite/check_for_error,1,1,
 error_suite/check_for_no_error,1,1,
 error_suite/report_error,0,1,1 assertion(s) failed.: tests/test_common.c:70: Invalid return for report_error. Got: 1 | Expected: 0
