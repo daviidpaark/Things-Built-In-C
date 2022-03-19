@@ -3,21 +3,10 @@
 
 int main(int argc, char const *argv[])
 {
-    // size_t sz_u = 200, sz_v = 150, sz_w = 50, sz_x = 150, sz_y = 200, sz_z = 250;
-    // void *u = sf_malloc(sz_u);
-    // /* void *v = */ sf_malloc(sz_v);
-    // void *w = sf_malloc(sz_w);
-    // /* void *x = */ sf_malloc(sz_x);
-    // void *y = sf_malloc(sz_y);
-    // /* void *z = */ sf_malloc(sz_z);
-
-    // sf_show_heap();
-
-    // sf_free(u);
-    // sf_free(w);
-    // sf_free(y);
-    void *x = sf_malloc(4032);
-    x = x;
+    size_t sz_x = sizeof(double) * 8, sz_y = sizeof(int);
+	void *x = sf_malloc(sz_x);
+	void *y = sf_realloc(x, sz_y);
+    y = y;
 
     sf_show_heap();
 

@@ -366,7 +366,11 @@ void *findBlock(sf_size_t size)
                     sf_footer *ftr = &freeBlock->header;
                     ftr = ftr + (blockSize / 8 - 1);
                     *ftr = freeBlock->header;
-                    placeFreeBlock(blockSize, freeBlock);
+                    sf_block *newBlock = coalesce(blockSize, freeBlock);
+                    if (newBlock != NULL)
+                        placeFreeBlock(blockSize, newBlock);
+                    else
+                        placeFreeBlock(blockSize, freeBlock);
                     return block;
                 }
                 else
@@ -462,8 +466,100 @@ void sf_free(void *pp)
 
 void *sf_realloc(void *pp, sf_size_t rsize)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    pp = pp - 16;
+    if (pp == NULL || ((unsigned long)pp % 16))
+    {
+        sf_errno = EINVAL;
+        return NULL;
+    }
+    sf_block *block = (sf_block *)pp;
+
+    if (&block->header < (sf_header *)sf_mem_start() + 5 || &block->header > (sf_header *)sf_mem_end() - 1)
+    {
+        sf_errno = EINVAL;
+        return NULL;
+    }
+    sf_size_t size = (block->header ^ MAGIC) & 0xFFFFFFF0;
+    if (size < 32 || size % 16)
+    {
+        sf_errno = EINVAL;
+        return NULL;
+    }
+    if (!(((block->header ^ MAGIC) & 0xF) & THIS_BLOCK_ALLOCATED))
+    {
+        sf_errno = EINVAL;
+        return NULL;
+    }
+    else if (!(((block->header ^ MAGIC) & 0xF) & PREV_BLOCK_ALLOCATED))
+    {
+        if (!block->prev_footer)
+        {
+            sf_errno = EINVAL;
+            return NULL;
+        }
+    }
+
+    if (rsize == 0)
+    {
+        sf_free(pp + 16);
+        return NULL;
+    }
+    if (rsize == size)
+        return (pp + 16);
+    if (rsize > size)
+    {
+        void *ptr;
+        if ((ptr = sf_malloc(rsize)) == NULL)
+            return NULL;
+        memcpy(ptr, (pp + 16), (block->header ^ MAGIC) >> 32);
+        sf_free(pp + 16);
+        return ptr;
+    }
+    if (rsize < size)
+    {
+        sf_size_t asize;
+        asize = rsize + 8;
+        if (asize <= 32)
+            asize = 32;
+        if (asize % 16 != 0)
+            asize = asize + (16 - (asize % 16));
+
+        if (size - asize >= 32)
+        {
+            sf_header *start = (sf_header *)(block);
+            start = start + (asize / 8);
+            sf_block *freeBlock = (sf_block *)(start);
+            freeBlock->header = ((size - asize) | PREV_BLOCK_ALLOCATED) ^ MAGIC;
+            sf_footer *ftr = &freeBlock->header;
+            ftr = ftr + (((size - asize) / 8) - 1);
+            *ftr = freeBlock->header;
+            ftr++;
+            if (!((*ftr ^ MAGIC) & 0xF & THIS_BLOCK_ALLOCATED))
+            {
+                sf_size_t nextSize = (*ftr ^ MAGIC) & 0xFFFFFFF0;
+                *ftr = nextSize ^ MAGIC;
+            }
+            sf_block *newBlock = coalesce(size - asize, freeBlock);
+            if (newBlock != NULL)
+                placeFreeBlock(size - asize, newBlock);
+            else
+                placeFreeBlock(size - asize, freeBlock);
+
+            sf_header payload;
+            payload = rsize;
+            payload = payload << 32;
+            block->header = (payload | asize | ((block->header ^ MAGIC) & 0xF)) ^ MAGIC;
+        }
+        else
+        {
+            sf_header payload;
+            payload = rsize;
+            payload = payload << 32;
+            block->header = (payload | size | ((block->header ^ MAGIC) & 0xF)) ^ MAGIC;
+        }
+        return (pp + 16);
+    }
+    return NULL;
 }
 
 double sf_internal_fragmentation()
