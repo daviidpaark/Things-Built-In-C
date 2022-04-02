@@ -18,16 +18,18 @@ typedef struct store
 {
     struct store *next;
     struct store *prev;
-    char *name;
-    void *value;
+    char name[100];
+    char string[100];
+    long value;
+
 } STORE;
 
-STORE head;
+STORE start;
 
-void initStore(STORE *head)
+void initStore(STORE *start)
 {
-    head->next = head;
-    head->prev = head;
+    start->next = start;
+    start->prev = start;
 }
 
 /**
@@ -46,8 +48,23 @@ void initStore(STORE *head)
  */
 char *store_get_string(char *var)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    if (!start.next)
+    {
+        return NULL;
+    }
+    STORE *current = start.next;
+    while (current != &start)
+    {
+        if (strcmp(current->name, var) == 0)
+        {
+            if (current->string)
+                return current->string;
+            else
+                return NULL;
+        }
+        current = current->next;
+    }
+    return NULL;
 }
 
 /**
@@ -65,8 +82,28 @@ char *store_get_string(char *var)
  */
 int store_get_int(char *var, long *valp)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    if (!start.next)
+    {
+        return -1;
+    }
+    STORE *current = start.next;
+    while (current != &start)
+    {
+        if (strcmp(current->name, var) == 0)
+        {
+            if (current->value)
+            {
+                *valp = current->value;
+                return 0;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        current = current->next;
+    }
+    return -1;
 }
 
 /**
@@ -86,10 +123,17 @@ int store_get_int(char *var, long *valp)
  */
 int store_set_string(char *var, char *val)
 {
-    if (!head.next)
+    if (!start.next)
     {
-        initStore(&head);
+        initStore(&start);
     }
+    STORE *insert = (STORE *)malloc(sizeof(STORE));
+    strcpy(insert->name, var);
+    strcpy(insert->string, val);
+    start.prev->next = insert;
+    insert->prev = start.prev;
+    start.prev = insert;
+    insert->next = &start;
     return 0;
 }
 
@@ -107,10 +151,17 @@ int store_set_string(char *var, char *val)
  */
 int store_set_int(char *var, long val)
 {
-    if (!head.next)
+    if (!start.next)
     {
-        initStore(&head);
+        initStore(&start);
     }
+    STORE *insert = (STORE *)malloc(sizeof(STORE));
+    strcpy(insert->name, var);
+    insert->value = val;
+    start.prev->next = insert;
+    insert->prev = start.prev;
+    start.prev = insert;
+    insert->next = &start;
     return 0;
 }
 
@@ -124,4 +175,22 @@ int store_set_int(char *var, long val)
  */
 void store_show(FILE *f)
 {
+    if (!start.next)
+    {
+        fprintf(f, "{}");
+        return;
+    }
+    fprintf(f, "{");
+    STORE *current = start.next;
+    while (current != &start)
+    {
+        if (current->string)
+            fprintf(f, "%s=%s", current->name, current->string);
+        else if (current->value)
+            fprintf(f, "%s=%ld", current->name, current->value);
+        if (current->next != &start)
+            fprintf(f, ",");
+        current = current->next;
+    }
+    fprintf(f, "}");
 }

@@ -23,6 +23,7 @@ typedef struct prog
 PROG head;
 
 int counter;
+int length;
 
 void initProg(PROG *head)
 {
@@ -43,13 +44,31 @@ void initProg(PROG *head)
  */
 int prog_list(FILE *out)
 {
+    if (!head.next)
+        return -1;
     PROG *current = head.next;
-    while (current != &head)
+    int i = 1;
+    if (counter < length)
     {
-        show_stmt(out, current->stmt);
-        current = current->next;
+        while (current != &head)
+        {
+            show_stmt(out, current->stmt);
+            if (i == counter)
+                fprintf(out, "-->\n");
+            current = current->next;
+            i++;
+        }
     }
-    fprintf(out, "-->\n");
+    else
+    {
+        while (current != &head)
+        {
+            show_stmt(out, current->stmt);
+            current = current->next;
+            i++;
+        }
+        fprintf(out, "-->\n");
+    }
     return 0;
 }
 
@@ -82,6 +101,7 @@ int prog_insert(STMT *stmt)
     insert->prev = head.prev;
     head.prev = insert;
     insert->next = &head;
+    length++;
     counter++;
     return 0;
 }
@@ -116,9 +136,9 @@ int prog_delete(int min, int max)
             free_stmt(current->stmt);
             free(current);
             current = tmp;
-            counter--;
+            length--;
         }
-        else 
+        else
             current = current->next;
     }
     return 0;
@@ -147,11 +167,14 @@ void prog_reset(void)
  */
 STMT *prog_fetch(void)
 {
+    if (!head.next)
+        return NULL;
     PROG *current = head.next;
     int i = 1;
     while (current != &head)
     {
-        if (i > counter) {
+        if (i > counter)
+        {
             return current->stmt;
         }
         current = current->next;
@@ -173,12 +196,15 @@ STMT *prog_fetch(void)
  */
 STMT *prog_next()
 {
+    if (!head.next)
+        return NULL;
+    counter++;
     PROG *current = head.next;
     int i = 1;
     while (current != &head)
     {
-        if (i > counter + 1) {
-            counter++;
+        if (i > counter)
+        {
             return current->stmt;
         }
         current = current->next;
@@ -204,11 +230,14 @@ STMT *prog_next()
  */
 STMT *prog_goto(int lineno)
 {
+    if (!head.next)
+        return NULL;
     PROG *current = head.next;
     int i = 0;
     while (current != &head)
     {
-        if (current->stmt->lineno == lineno) {
+        if (current->stmt->lineno == lineno)
+        {
             counter = i;
             return current->stmt;
         }
