@@ -13,6 +13,23 @@
  * store can hold.
  */
 
+typedef struct prog
+{
+    struct prog *next;
+    struct prog *prev;
+    STMT *stmt;
+} PROG;
+
+PROG head;
+
+int counter;
+
+void initProg(PROG *head)
+{
+    head->next = head;
+    head->prev = head;
+}
+
 /**
  * @brief  Output a listing of the current contents of the program store.
  * @details  This function outputs a listing of the current contents of the
@@ -24,9 +41,16 @@
  * @param out  The stream to which to output the listing.
  * @return  0 if successful, -1 if any error occurred.
  */
-int prog_list(FILE *out) {
-    // TO BE IMPLEMENTED
-    abort();
+int prog_list(FILE *out)
+{
+    PROG *current = head.next;
+    while (current != &head)
+    {
+        show_stmt(out, current->stmt);
+        current = current->next;
+    }
+    fprintf(out, "-->\n");
+    return 0;
 }
 
 /**
@@ -46,9 +70,20 @@ int prog_list(FILE *out) {
  * @param stmt  The statement to be inserted.
  * @return  0 if successful, -1 if any error occurred.
  */
-int prog_insert(STMT *stmt) {
-    // TO BE IMPLEMENTED
-    abort();
+int prog_insert(STMT *stmt)
+{
+    if (!head.next)
+    {
+        initProg(&head);
+    }
+    PROG *insert = (PROG *)malloc(sizeof(PROG));
+    insert->stmt = stmt;
+    head.prev->next = insert;
+    insert->prev = head.prev;
+    head.prev = insert;
+    insert->next = &head;
+    counter++;
+    return 0;
 }
 
 /**
@@ -68,9 +103,25 @@ int prog_insert(STMT *stmt) {
  * @param min  Lower end of the range of line numbers to be deleted.
  * @param max  Upper end of the range of line numbers to be deleted.
  */
-int prog_delete(int min, int max) {
-    // TO BE IMPLEMENTED
-    abort();
+int prog_delete(int min, int max)
+{
+    PROG *current = head.next;
+    while (current != &head)
+    {
+        if (current->stmt->lineno >= min && current->stmt->lineno <= max)
+        {
+            PROG *tmp = current->next;
+            current->prev->next = current->next;
+            current->next->prev = current->prev;
+            free_stmt(current->stmt);
+            free(current);
+            current = tmp;
+            counter--;
+        }
+        else 
+            current = current->next;
+    }
+    return 0;
 }
 
 /**
@@ -78,9 +129,9 @@ int prog_delete(int min, int max) {
  * @details  This function resets the program counter to point just
  * before the first statement in the program.
  */
-void prog_reset(void) {
-    // TO BE IMPLEMENTED
-    abort();
+void prog_reset(void)
+{
+    counter = 0;
 }
 
 /**
@@ -94,9 +145,19 @@ void prog_reset(void) {
  * @return  The first program statement after the current program
  * counter position, if any, otherwise NULL.
  */
-STMT *prog_fetch(void) {
-    // TO BE IMPLEMENTED
-    abort();
+STMT *prog_fetch(void)
+{
+    PROG *current = head.next;
+    int i = 1;
+    while (current != &head)
+    {
+        if (i > counter) {
+            return current->stmt;
+        }
+        current = current->next;
+        i++;
+    }
+    return NULL;
 }
 
 /**
@@ -110,9 +171,20 @@ STMT *prog_fetch(void) {
  * @return The first program statement after the new program counter
  * position, if any, otherwise NULL.
  */
-STMT *prog_next() {
-    // TO BE IMPLEMENTED
-    abort();
+STMT *prog_next()
+{
+    PROG *current = head.next;
+    int i = 1;
+    while (current != &head)
+    {
+        if (i > counter + 1) {
+            counter++;
+            return current->stmt;
+        }
+        current = current->next;
+        i++;
+    }
+    return NULL;
 }
 
 /**
@@ -130,7 +202,18 @@ STMT *prog_next() {
  * @return  The statement having the specified line number, if such a
  * statement exists, otherwise NULL.
  */
-STMT *prog_goto(int lineno) {
-    // TO BE IMPLEMENTED
-    abort();
+STMT *prog_goto(int lineno)
+{
+    PROG *current = head.next;
+    int i = 0;
+    while (current != &head)
+    {
+        if (current->stmt->lineno == lineno) {
+            counter = i;
+            return current->stmt;
+        }
+        current = current->next;
+        i++;
+    }
+    return NULL;
 }

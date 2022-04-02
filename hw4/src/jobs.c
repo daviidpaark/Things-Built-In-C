@@ -46,7 +46,8 @@
  *
  * @return 0 if initialization is successful, otherwise -1.
  */
-int jobs_init(void) {
+int jobs_init(void)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -61,7 +62,8 @@ int jobs_init(void) {
  *
  * @return 0 if finalization is completely successful, otherwise -1.
  */
-int jobs_fini(void) {
+int jobs_fini(void)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -82,9 +84,9 @@ int jobs_fini(void) {
  * @param file  The output stream to which the job table is to be printed.
  * @return 0  If the jobs table was successfully printed, -1 otherwise.
  */
-int jobs_show(FILE *file) {
-    // TO BE IMPLEMENTED
-    abort();
+int jobs_show(FILE *file)
+{
+    return 0;
 }
 
 /**
@@ -116,13 +118,14 @@ int jobs_show(FILE *file) {
  * object when it is finished with it.  This means that the caller should not pass
  * a pipeline object that is shared with any other data structure, but rather should
  * make a copy to be passed to this function.
- * 
+ *
  * @return  -1 if the pipeline could not be initialized properly, otherwise the
  * value returned is the job ID assigned to the pipeline.
  */
-int jobs_run(PIPELINE *pline) {
-    // TO BE IMPLEMENTED
-    abort();
+int jobs_run(PIPELINE *pline)
+{
+    show_pipeline(stdout, pline);
+    return 0;
 }
 
 /**
@@ -135,7 +138,8 @@ int jobs_run(PIPELINE *pline) {
  * @return  the exit status of the job leader, as returned by waitpid(),
  * or -1 if any error occurs that makes it impossible to wait for the specified job.
  */
-int jobs_wait(int jobid) {
+int jobs_wait(int jobid)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -150,7 +154,8 @@ int jobs_wait(int jobid) {
  * @return  the exit status of the job leader, as returned by waitpid(), if the job
  * has terminated, or -1 if the job has not yet terminated or if any other error occurs.
  */
-int jobs_poll(int jobid) {
+int jobs_poll(int jobid)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -167,7 +172,8 @@ int jobs_poll(int jobid) {
  * @param  jobid  The job ID of the job to expunge.
  * @return  0 if the job was successfully expunged, -1 if the job could not be expunged.
  */
-int jobs_expunge(int jobid) {
+int jobs_expunge(int jobid)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -189,7 +195,8 @@ int jobs_expunge(int jobid) {
  * terminated, a previous attempt had been made to cancel the job, or any other
  * error occurred.
  */
-int jobs_cancel(int jobid) {
+int jobs_cancel(int jobid)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -204,7 +211,8 @@ int jobs_cancel(int jobid) {
  * @return  The captured output, if the job has terminated and there is captured
  * output available, otherwise NULL.
  */
-char *jobs_get_output(int jobid) {
+char *jobs_get_output(int jobid)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -217,7 +225,8 @@ char *jobs_get_output(int jobid) {
  *
  * @return -1 if any error occurred, 0 otherwise.
  */
-int jobs_pause(void) {
+int jobs_pause(void)
+{
     // TO BE IMPLEMENTED
     abort();
 }

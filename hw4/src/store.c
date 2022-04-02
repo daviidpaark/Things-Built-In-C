@@ -14,6 +14,22 @@
  * variable is the string representation of an integer.
  */
 
+typedef struct store
+{
+    struct store *next;
+    struct store *prev;
+    char *name;
+    void *value;
+} STORE;
+
+STORE head;
+
+void initStore(STORE *head)
+{
+    head->next = head;
+    head->prev = head;
+}
+
 /**
  * @brief  Get the current value of a variable as a string.
  * @details  This function retrieves the current value of a variable
@@ -28,7 +44,8 @@
  * @return  A string that is the current value of the variable, if any,
  * otherwise NULL.
  */
-char *store_get_string(char *var) {
+char *store_get_string(char *var)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -46,7 +63,8 @@ char *store_get_string(char *var) {
  * cannot be interpreted as an integer, then -1 is returned,
  * otherwise 0 is returned.
  */
-int store_get_int(char *var, long *valp) {
+int store_get_int(char *var, long *valp)
+{
     // TO BE IMPLEMENTED
     abort();
 }
@@ -66,9 +84,13 @@ int store_get_int(char *var, long *valp) {
  * @param  val  The value to set, or NULL if the variable is to become
  * un-set.
  */
-int store_set_string(char *var, char *val) {
-    // TO BE IMPLEMENTED
-    abort();
+int store_set_string(char *var, char *val)
+{
+    if (!head.next)
+    {
+        initStore(&head);
+    }
+    return 0;
 }
 
 /**
@@ -83,9 +105,13 @@ int store_set_string(char *var, char *val) {
  * @param  var  The variable whose value is to be set.
  * @param  val  The value to set.
  */
-int store_set_int(char *var, long val) {
-    // TO BE IMPLEMENTED
-    abort();
+int store_set_int(char *var, long val)
+{
+    if (!head.next)
+    {
+        initStore(&head);
+    }
+    return 0;
 }
 
 /**
@@ -96,7 +122,6 @@ int store_set_int(char *var, long val) {
  *
  * @param f  The stream to which the store contents are to be printed.
  */
-void store_show(FILE *f) {
-    // TO BE IMPLEMENTED
-    abort();
+void store_show(FILE *f)
+{
 }
