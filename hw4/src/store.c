@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 /*
  * This is the "data store" module for Mush.
@@ -20,7 +21,7 @@ typedef struct store
     struct store *prev;
     char name[100];
     char string[100];
-    long value;
+    long number;
 
 } STORE;
 
@@ -91,9 +92,9 @@ int store_get_int(char *var, long *valp)
     {
         if (strcmp(current->name, var) == 0)
         {
-            if (current->value)
+            if (current->number)
             {
-                *valp = current->value;
+                *valp = current->number;
                 return 0;
             }
             else
@@ -127,9 +128,40 @@ int store_set_string(char *var, char *val)
     {
         initStore(&start);
     }
+
+    STORE *current = start.next;
+    while (current != &start)
+    {
+        if (strcmp(current->name, var) == 0)
+        {
+            if (val == NULL)
+            {
+                STORE *tmp = current->next;
+                current->prev->next = current->next;
+                current->next->prev = current->prev;
+                free(current);
+                current = tmp;
+                return 0;
+            }
+            strcpy(current->string, val);
+            char *endptr;
+            long value = strtol(val, &endptr, 10);
+            if (!errno)
+                current->number = value;
+            return 0;
+        }
+        current = current->next;
+    }
+
     STORE *insert = (STORE *)malloc(sizeof(STORE));
     strcpy(insert->name, var);
     strcpy(insert->string, val);
+
+    char *endptr;
+    long value = strtol(val, &endptr, 10);
+    if (!errno)
+        insert->number = value;
+
     start.prev->next = insert;
     insert->prev = start.prev;
     start.prev = insert;
@@ -155,9 +187,21 @@ int store_set_int(char *var, long val)
     {
         initStore(&start);
     }
+
+    STORE *current = start.next;
+    while (current != &start)
+    {
+        if (strcmp(current->name, var) == 0)
+        {
+            current->number = val;
+            return 0;
+        }
+        current = current->next;
+    }
+
     STORE *insert = (STORE *)malloc(sizeof(STORE));
     strcpy(insert->name, var);
-    insert->value = val;
+    insert->number = val;
     start.prev->next = insert;
     insert->prev = start.prev;
     start.prev = insert;
@@ -184,10 +228,10 @@ void store_show(FILE *f)
     STORE *current = start.next;
     while (current != &start)
     {
-        if (current->string)
+        if (current->number)
+            fprintf(f, "%s=%ld", current->name, current->number);
+        else if (current->string)
             fprintf(f, "%s=%s", current->name, current->string);
-        else if (current->value)
-            fprintf(f, "%s=%ld", current->name, current->value);
         if (current->next != &start)
             fprintf(f, ",");
         current = current->next;

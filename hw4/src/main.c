@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    // jobs_init();
+    jobs_init();
     exec_interactive();
-    // jobs_fini();
+    jobs_fini();
 }

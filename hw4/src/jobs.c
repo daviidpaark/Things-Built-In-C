@@ -38,6 +38,13 @@
  * as required by the implementation of the various functions in this module.
  */
 
+typedef struct job
+{
+    struct job *next;
+    struct job *prev;
+
+} JOB;
+
 /**
  * @brief  Initialize the jobs module.
  * @details  This function is used to initialize the jobs module.
@@ -48,8 +55,7 @@
  */
 int jobs_init(void)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    return 0;
 }
 
 /**
@@ -64,8 +70,7 @@ int jobs_init(void)
  */
 int jobs_fini(void)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    return 0;
 }
 
 /**
@@ -125,6 +130,7 @@ int jobs_show(FILE *file)
 int jobs_run(PIPELINE *pline)
 {
     show_pipeline(stdout, pline);
+    printf("\n");
     return 0;
 }
 
@@ -140,8 +146,7 @@ int jobs_run(PIPELINE *pline)
  */
 int jobs_wait(int jobid)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    return 0;
 }
 
 /**
@@ -174,8 +179,7 @@ int jobs_poll(int jobid)
  */
 int jobs_expunge(int jobid)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    return 0;
 }
 
 /**
@@ -213,8 +217,7 @@ int jobs_cancel(int jobid)
  */
 char *jobs_get_output(int jobid)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    return NULL;
 }
 
 /**
