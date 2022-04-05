@@ -42,8 +42,22 @@ typedef struct job
 {
     struct job *next;
     struct job *prev;
-
+    PIPELINE *pipe;
+    pid_t pID;
+    int jobID;
+    enum status
+    {
+        NEW,
+        RUNNING,
+        COMPLETED,
+        ABORTED,
+        CANCELED
+    } STATUS;
 } JOB;
+
+JOB first;
+
+int ID;
 
 /**
  * @brief  Initialize the jobs module.
@@ -55,6 +69,8 @@ typedef struct job
  */
 int jobs_init(void)
 {
+    first.next = &first;
+    first.prev = &first;
     return 0;
 }
 
@@ -70,7 +86,23 @@ int jobs_init(void)
  */
 int jobs_fini(void)
 {
-    return 0;
+    if (!first.next)
+        return 0;
+    JOB *current = first.next;
+    while (current != &first)
+    {
+        if (current->STATUS == RUNNING)
+        {
+            jobs_cancel(current->jobID);
+        }
+        JOB *tmp = current->next;
+        current->prev->next = current->next;
+        current->next->prev = current->prev;
+        free(current);
+        current = tmp;
+        ID--;
+    }
+    return -1;
 }
 
 /**
@@ -91,6 +123,36 @@ int jobs_fini(void)
  */
 int jobs_show(FILE *file)
 {
+    JOB *current = first.next;
+    while (current != &first)
+    {
+        char *status;
+        switch (current->STATUS)
+        {
+        case NEW:
+            status = "new";
+            break;
+        case RUNNING:
+            status = "running";
+            break;
+        case COMPLETED:
+            status = "completed";
+            break;
+        case ABORTED:
+            status = "aborted";
+            break;
+        case CANCELED:
+            status = "canceled";
+            break;
+
+        default:
+            break;
+        }
+        fprintf(file, "%d \t%d \t%s \t", current->jobID, current->pID, status);
+        show_pipeline(file, current->pipe);
+        fprintf(file, "\n");
+        current = current->next;
+    }
     return 0;
 }
 
@@ -129,9 +191,51 @@ int jobs_show(FILE *file)
  */
 int jobs_run(PIPELINE *pline)
 {
-    show_pipeline(stdout, pline);
-    printf("\n");
-    return 0;
+    pid_t pid;
+
+    pid = fork();
+    if (pid == 0)
+    {
+        if (pline->commands->args->next)
+        {
+            char *argv[100] = {pline->commands->args->expr->members.value};
+            struct arg *arg = pline->commands->args->next;
+            int i = 1;
+            while (arg->expr)
+            {
+                argv[i] = arg->expr->members.value;
+                i++;
+                if (arg->next)
+                    arg = arg->next;
+                else
+                    break;
+            }
+            if (execvp(pline->commands->args->expr->members.value, argv) < 0)
+            {
+                printf("execvp failed: No such file or directory\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (execvp(pline->commands->args->expr->members.value, &pline->commands->args->expr->members.value) < 0)
+        {
+            printf("execvp failed: No such file or directory\n");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        JOB *insert = (JOB *)malloc(sizeof(JOB));
+        insert->pID = pid;
+        insert->jobID = ID;
+        insert->pipe = pline;
+        insert->STATUS = RUNNING;
+
+        first.prev->next = insert;
+        insert->prev = first.prev;
+        first.prev = insert;
+        insert->next = &first;
+    }
+    return ID++;
 }
 
 /**
@@ -146,7 +250,29 @@ int jobs_run(PIPELINE *pline)
  */
 int jobs_wait(int jobid)
 {
-    return 0;
+    pid_t pid;
+    int status;
+    if (!first.next)
+        return -1;
+    JOB *current = first.next;
+    while (current != &first)
+    {
+        if (current->jobID == jobid)
+        {
+            pid = current->pID;
+            break;
+        }
+        current = current->next;
+    }
+    if (pid == 0)
+        return -1;
+    waitpid(pid, &status, 0);
+    if (WIFEXITED(status))
+    {
+        current->STATUS = COMPLETED;
+        return WEXITSTATUS(status);
+    }
+    return -1;
 }
 
 /**
@@ -161,8 +287,29 @@ int jobs_wait(int jobid)
  */
 int jobs_poll(int jobid)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    pid_t pid;
+    int status;
+    if (!first.next)
+        return -1;
+    JOB *current = first.next;
+    while (current != &first)
+    {
+        if (current->jobID == jobid)
+        {
+            pid = current->pID;
+            break;
+        }
+        current = current->next;
+    }
+    if (pid == 0)
+        return -1;
+    waitpid(pid, &status, WNOHANG);
+    if (WIFEXITED(status))
+    {
+        current->STATUS = COMPLETED;
+        return WEXITSTATUS(status);
+    }
+    return -1;
 }
 
 /**
@@ -179,7 +326,24 @@ int jobs_poll(int jobid)
  */
 int jobs_expunge(int jobid)
 {
-    return 0;
+    if (!first.next)
+        return -1;
+    JOB *current = first.next;
+    while (current != &first)
+    {
+        if (current->jobID == jobid)
+        {
+            if (current->STATUS != COMPLETED)
+                return -1;
+            current->prev->next = current->next;
+            current->next->prev = current->prev;
+            free(current);
+            ID--;
+            return 0;
+        }
+        current = current->next;
+    }
+    return -1;
 }
 
 /**
@@ -201,8 +365,27 @@ int jobs_expunge(int jobid)
  */
 int jobs_cancel(int jobid)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    pid_t pid;
+    if (!first.next)
+        return -1;
+    JOB *current = first.next;
+    while (current != &first)
+    {
+        if (current->jobID == jobid)
+        {
+            pid = current->pID;
+            break;
+        }
+        current = current->next;
+    }
+    if (pid == 0)
+        return -1;
+    if (kill(pid, SIGKILL) == 0)
+    {
+        current->STATUS = CANCELED;
+        return 0;
+    }
+    return -1;
 }
 
 /**
@@ -230,6 +413,5 @@ char *jobs_get_output(int jobid)
  */
 int jobs_pause(void)
 {
-    // TO BE IMPLEMENTED
-    abort();
+    return 0;
 }

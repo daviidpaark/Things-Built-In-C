@@ -22,7 +22,6 @@ typedef struct store
     char name[100];
     char string[100];
     long number;
-
 } STORE;
 
 STORE start;
@@ -136,11 +135,9 @@ int store_set_string(char *var, char *val)
         {
             if (val == NULL)
             {
-                STORE *tmp = current->next;
                 current->prev->next = current->next;
                 current->next->prev = current->prev;
                 free(current);
-                current = tmp;
                 return 0;
             }
             strcpy(current->string, val);
@@ -228,7 +225,7 @@ void store_show(FILE *f)
     STORE *current = start.next;
     while (current != &start)
     {
-        if (current->number)
+        if (current->number || current->number == 0)
             fprintf(f, "%s=%ld", current->name, current->number);
         else if (current->string)
             fprintf(f, "%s=%s", current->name, current->string);

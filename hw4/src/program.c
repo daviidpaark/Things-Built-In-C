@@ -125,6 +125,8 @@ int prog_insert(STMT *stmt)
  */
 int prog_delete(int min, int max)
 {
+    if (!head.next)
+        return -1;
     PROG *current = head.next;
     while (current != &head)
     {
