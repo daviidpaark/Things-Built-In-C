@@ -45,6 +45,7 @@ typedef struct job
     PIPELINE *pipe;
     pid_t pID;
     int jobID;
+    char msg[100];
     enum status
     {
         NEW,
@@ -86,7 +87,7 @@ int jobs_init(void)
  */
 int jobs_fini(void)
 {
-    if (!first.next)
+    if (first.next == &first)
         return 0;
     JOB *current = first.next;
     while (current != &first)
@@ -94,6 +95,7 @@ int jobs_fini(void)
         if (current->STATUS == RUNNING)
         {
             jobs_cancel(current->jobID);
+            jobs_expunge(current->jobID);
         }
         JOB *tmp = current->next;
         current->prev->next = current->next;
@@ -102,7 +104,7 @@ int jobs_fini(void)
         current = tmp;
         ID--;
     }
-    return -1;
+    return 0;
 }
 
 /**
@@ -123,9 +125,18 @@ int jobs_fini(void)
  */
 int jobs_show(FILE *file)
 {
+    pid_t pid;
+    int status;
+
     JOB *current = first.next;
     while (current != &first)
     {
+        pid = current->pID;
+        waitpid(pid, &status, WNOHANG);
+        if (WIFEXITED(status))
+        {
+            current->STATUS = COMPLETED;
+        }
         char *status;
         switch (current->STATUS)
         {
@@ -191,11 +202,21 @@ int jobs_show(FILE *file)
  */
 int jobs_run(PIPELINE *pline)
 {
-    pid_t pid;
+    int fd[2];
+    FILE *in, *out;
 
+    pid_t pid;
+    pipe(fd);
     pid = fork();
     if (pid == 0)
     {
+        if (pline->capture_output)
+        {
+            close(STDOUT_FILENO);
+            dup(fd[1]);
+            close(fd[0]);
+            out = fdopen(fd[1], "w");
+        }
         if (pline->commands->args->next)
         {
             char *argv[100] = {pline->commands->args->expr->members.value};
@@ -221,14 +242,23 @@ int jobs_run(PIPELINE *pline)
             printf("execvp failed: No such file or directory\n");
             exit(EXIT_FAILURE);
         }
+        if (pline->capture_output)
+            fclose(out);
     }
     else
     {
+        if (pline->capture_output)
+        {
+            close(fd[1]);
+            in = fdopen(fd[0], "r");
+        }
         JOB *insert = (JOB *)malloc(sizeof(JOB));
         insert->pID = pid;
         insert->jobID = ID;
         insert->pipe = pline;
         insert->STATUS = RUNNING;
+        if (pline->capture_output)
+            fgets(insert->msg, 100, in);
 
         first.prev->next = insert;
         insert->prev = first.prev;
@@ -252,7 +282,7 @@ int jobs_wait(int jobid)
 {
     pid_t pid;
     int status;
-    if (!first.next)
+    if (first.next == &first)
         return -1;
     JOB *current = first.next;
     while (current != &first)
@@ -289,7 +319,7 @@ int jobs_poll(int jobid)
 {
     pid_t pid;
     int status;
-    if (!first.next)
+    if (first.next == &first)
         return -1;
     JOB *current = first.next;
     while (current != &first)
@@ -326,7 +356,7 @@ int jobs_poll(int jobid)
  */
 int jobs_expunge(int jobid)
 {
-    if (!first.next)
+    if (first.next == &first)
         return -1;
     JOB *current = first.next;
     while (current != &first)
@@ -366,7 +396,7 @@ int jobs_expunge(int jobid)
 int jobs_cancel(int jobid)
 {
     pid_t pid;
-    if (!first.next)
+    if (first.next == &first)
         return -1;
     JOB *current = first.next;
     while (current != &first)
@@ -400,6 +430,17 @@ int jobs_cancel(int jobid)
  */
 char *jobs_get_output(int jobid)
 {
+    if (first.next == &first)
+        return NULL;
+    JOB *current = first.next;
+    while (current != &first)
+    {
+        if (current->jobID == jobid)
+        {
+            return current->msg;
+        }
+        current = current->next;
+    }
     return NULL;
 }
 
@@ -413,5 +454,17 @@ char *jobs_get_output(int jobid)
  */
 int jobs_pause(void)
 {
+    pid_t pid;
+    int status;
+    if (first.next == &first)
+        return -1;
+    JOB *current = first.next;
+    while (current != &first)
+    {
+        pid = current->pID;
+        waitpid(pid, &status, 0);
+        current->STATUS = COMPLETED;
+        current = current->next;
+    }
     return 0;
 }

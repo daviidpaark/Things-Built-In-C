@@ -97,6 +97,22 @@ int prog_insert(STMT *stmt)
     }
     PROG *insert = (PROG *)malloc(sizeof(PROG));
     insert->stmt = stmt;
+
+    PROG *current = head.next;
+    while (current != &head)
+    {
+        if (current->stmt->lineno == insert->stmt->lineno){
+            insert->next = current->next;
+            insert->prev = current->prev;
+            current->next->prev = insert;
+            current->prev->next = insert;
+            free_stmt(current->stmt);
+            free(current);
+            return 0;
+        }
+        current = current->next;
+    }
+
     head.prev->next = insert;
     insert->prev = head.prev;
     head.prev = insert;
