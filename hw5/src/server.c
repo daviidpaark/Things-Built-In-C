@@ -4,6 +4,7 @@
  */
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
 
 #include "debug.h"
 #include "pbx.h"
@@ -14,7 +15,7 @@
  * This is called after a network connection has been made via the main server
  * thread and a new thread has been created to handle the connection.
  */
-#if 0
+#if 1
 void *pbx_client_service(void *arg)
 {
     int connfd = *((int *)arg);
@@ -22,6 +23,42 @@ void *pbx_client_service(void *arg)
     pthread_detach(pthread_self());
     TU *tu = tu_init(connfd);
     pbx_register(pbx, tu, connfd);
+
+    char buf[1024];
+    int bytes;
+    while (1)
+    {
+        bytes = read(connfd, buf, 1024);
+        if (bytes <= 0)
+        {
+            return NULL;
+        }
+
+        if (strncmp(buf, "pickup", 6) == 0)
+        {
+            printf("pickup\n");
+            tu_pickup(tu);
+        }
+        else if (strncmp(buf, "hangup", 6) == 0)
+        {
+            printf("hangup\n");
+            tu_hangup(tu);
+        }
+        else if (strncmp(buf, "dial ", 5) == 0)
+        {
+            printf("dial\n");
+            long num;
+            num = strtol(buf + 5, NULL, 10);
+            if (num <= 0)
+                continue;
+            pbx_dial(pbx, tu, connfd);
+        }
+        else if (strncmp(buf, "chat ", 5) == 0)
+        {
+            printf("chat\n");
+            tu_chat(tu, buf + 5);
+        }
+    }
 
     return NULL;
 }
