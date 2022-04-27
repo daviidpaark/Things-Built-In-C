@@ -5,12 +5,15 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <signal.h>
 
 #include "pbx.h"
 #include "server.h"
 #include "debug.h"
 
 static void terminate(int status);
+
+void handler(int signum);
 
 /*
  * "PBX" telephone exchange simulation.
@@ -80,6 +83,14 @@ int main(int argc, char *argv[])
         close(listenfd);
         terminate(EXIT_FAILURE);
     }
+
+    struct sigaction action, old_action;
+
+    action.sa_handler = handler;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = SA_RESTART;
+    sigaction(SIGHUP, &action, &old_action);
+
     while (1)
     {
         clientlen = sizeof(struct sockaddr_storage);
@@ -101,4 +112,9 @@ static void terminate(int status)
         pbx_shutdown(pbx);
     debug("PBX server terminating");
     exit(status);
+}
+
+void handler(int signum)
+{
+    pthread_exit(NULL);
 }

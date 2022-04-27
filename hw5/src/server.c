@@ -3,6 +3,7 @@
  * Manages interaction with a client telephone unit (TU).
  */
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "debug.h"
 #include "pbx.h"
@@ -14,8 +15,14 @@
  * thread and a new thread has been created to handle the connection.
  */
 #if 0
-void *pbx_client_service(void *arg) {
-    // TO BE IMPLEMENTED
-    abort();
+void *pbx_client_service(void *arg)
+{
+    int connfd = *((int *)arg);
+    free(arg);
+    pthread_detach(pthread_self());
+    TU *tu = tu_init(connfd);
+    pbx_register(pbx, tu, connfd);
+
+    return NULL;
 }
 #endif
