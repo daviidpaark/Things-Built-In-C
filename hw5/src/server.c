@@ -36,26 +36,22 @@ void *pbx_client_service(void *arg)
 
         if (strncmp(buf, "pickup", 6) == 0)
         {
-            printf("pickup\n");
             tu_pickup(tu);
         }
         else if (strncmp(buf, "hangup", 6) == 0)
         {
-            printf("hangup\n");
             tu_hangup(tu);
         }
         else if (strncmp(buf, "dial ", 5) == 0)
         {
-            printf("dial\n");
             long num;
             num = strtol(buf + 5, NULL, 10);
             if (num <= 0)
                 continue;
-            pbx_dial(pbx, tu, connfd);
+            pbx_dial(pbx, tu, num);
         }
         else if (strncmp(buf, "chat ", 5) == 0)
         {
-            printf("chat\n");
             tu_chat(tu, buf + 5);
         }
     }
