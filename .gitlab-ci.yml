@@ -2,6 +2,7 @@ image: hwrunner:latest
 variables:
     GIT_SSL_NO_VERIFY: "true"
     EXEC: pbx
+    PORT: 3333
     HW_DIR: hw5
     CPU_LIMIT: 60
     FILE_LIMIT: 1000000
@@ -20,7 +21,7 @@ run:
     script:
         - ulimit -t ${CPU_LIMIT}
         - ulimit -f ${FILE_LIMIT}
-        - cd ${HW_DIR} && bin/${EXEC}
+        - cd ${HW_DIR} && bin/${EXEC} -p ${PORT}
 test:
     stage: test
     script:
