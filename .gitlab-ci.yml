@@ -21,7 +21,7 @@ run:
     script:
         - ulimit -t ${CPU_LIMIT}
         - ulimit -f ${FILE_LIMIT}
-        - cd ${HW_DIR} && bin/${EXEC} -p ${PORT}
+        - cd ${HW_DIR} && bin/${EXEC}
 test:
     stage: test
     script:
