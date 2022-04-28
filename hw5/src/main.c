@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
     if (argc != 3)
     {
         fprintf(stderr, "Usage: %s -p <port>\n", argv[0]);
-        terminate(EXIT_FAILURE);
+        terminate(EXIT_SUCCESS);
     }
     // Perform required initialization of the PBX module.
     debug("Initializing PBX...");
