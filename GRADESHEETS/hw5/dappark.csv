@@ -1,0 +1,36 @@
+Graded Commit:ff8d610fad7bf3afeaf0ddae648e00addeb93d87
+
+TEST NAME, POINTS,OUT OF
+TU_suite/tu_chat_basic,0,1,1 assertion(s) failed.: tests/tu_tests.c:335: TU module was not implemented
+TU_suite/tu_chat_invalid,0,1,1 assertion(s) failed.: tests/tu_tests.c:379: TU module was not implemented
+TU_suite/tu_dial_basic,0,1,1 assertion(s) failed.: tests/tu_tests.c:187: TU module was not implemented
+TU_suite/tu_dial_deadlock,0,1,1 assertion(s) failed.: tests/tu_tests.c:309: TU module was not implemented
+TU_suite/tu_dial_off_hook,0,1,1 assertion(s) failed.: tests/tu_tests.c:258: TU module was not implemented
+TU_suite/tu_extension,0,1,1 assertion(s) failed.: tests/tu_tests.c:135: TU module was not implemented
+TU_suite/tu_fileno,0,1,1 assertion(s) failed.: tests/tu_tests.c:123: TU module was not implemented
+TU_suite/tu_init,0,1,1 assertion(s) failed.: tests/tu_tests.c:57: TU module was not implemented
+TU_suite/tu_pickup_basic,0,1,1 assertion(s) failed.: tests/tu_tests.c:149: TU module was not implemented
+TU_suite/tu_pickup_repeat,0,1,1 assertion(s) failed.: tests/tu_tests.c:172: TU module was not implemented
+TU_suite/tu_ref_stress,0,1,1 assertion(s) failed.: tests/tu_tests.c:83: TU module was not implemented
+TU_suite/tu_self_dial,0,1,1 assertion(s) failed.: tests/tu_tests.c:233: TU module was not implemented
+blackbox_suite/connect_disconnect2_test,1,1,
+blackbox_suite/connect_disconnect2_valgrind_test,1,1,
+blackbox_suite/connect_disconnect_many_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:284: The PBX module was not implemented
+blackbox_suite/connect_disconnect_many_valgrind_test,1,1,
+blackbox_suite/connect_disconnect_test,1,1,
+blackbox_suite/connect_disconnect_valgrind_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:130: Valgrind reported errors
+blackbox_suite/dial_answer_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:216: The PBX module was not implemented
+blackbox_suite/dial_bad_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:480: The PBX module was not implemented
+blackbox_suite/dial_disconnect_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:244: The PBX module was not implemented
+blackbox_suite/dial_good_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:511: The PBX module was not implemented
+blackbox_suite/dial_self_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:455: The PBX module was not implemented
+blackbox_suite/exercise_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:601: The PBX module was not implemented
+blackbox_suite/exercise_valgrind_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:691: The PBX module was not implemented
+blackbox_suite/open_connection_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:90: ***Server terminated ungracefully with signal 9
+blackbox_suite/open_connection_valgrind_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:133: ***Server terminated ungracefully with signal 9
+blackbox_suite/pickup_hangup2_test,1,1,
+blackbox_suite/pickup_hangup_test,0,1,1 assertion(s) failed.: tests/blackbox_tests.c:188: The PBX module was not implemented
+pbx_suite/dial_two_threads,0,1,1 assertion(s) failed.: tests/pbx_tests.c:382: PBX was not implemented
+pbx_suite/many_threads_random_reg_unreg_premature,0,1,1 assertion(s) failed.: tests/pbx_tests.c:335: PBX was not implemented
+stress_suite/stress_test,0,1,The test crashed.: None
+total,5,32
