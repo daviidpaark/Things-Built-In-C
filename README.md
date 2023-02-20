@@ -2,7 +2,6 @@
 
 ## 109582425
 
-:flushed:
 Prof. Eugene W. Stark - L01
 
 # ACADEMIC HONESTY STATEMENT
